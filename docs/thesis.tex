@@ -64,6 +64,88 @@
 \chapter*{Introduzione}
 \addcontentsline{toc}{chapter}{Introduzione}
 
+Negli ultimi anni l'evoluzione delle reti di comunicazione wireless
+ha conosciuto una crescita rapida e diffusa, alimentata dalla domanda
+di connettività ad alta velocità, da requisiti di bassa latenza e dal
+consistente aumento del numero di dispositivi connessi. Le reti di
+quinta generazione (5G) hanno rappresentato un salto qualitativo
+significativo, contribuendo al raggiungimento di ambiziosi obiettivi
+di capacità almeno mille volte superiore alle tecnologie precedenti e
+connettività ubiqua per decine di miliardi di dispositivi. Questo
+risultato è stato reso possibile dall'impiego di soluzioni
+tecnologiche avanzate, quali il Massive MIMO, le comunicazioni in
+banda millimetrica (mmWave) e le reti ultra-dense (Ultra Dense Networks, UDN).
+
+Nonostante i significativi benefici apportati, le reti 5G continuano
+a presentare criticità rilevanti legate alla complessità hardware, ai
+costi di implementazione e al consumo energetico. In particolare,
+l'estensione del Massive MIMO dalle bande sub-6 GHz alle frequenze
+millimetriche richiede architetture altamente complesse, maggior
+numero di catene RF (radio frequency chains) e hardware sofisticato e
+costoso dal punto di vista energetico. Parallelamente, la
+propagazione in banda mmWave risulta fortemente penalizzata dalla
+vulnerabilità al blocco indoor e dai fenomeni di attenuazione,
+rendendo difficile mantenere livelli affidabili di copertura e
+qualità del segnale.
+
+In questo contesto, il paradigma tradizionale di adattamento basato
+esclusivamente sulla progettazione del trasmettitore e del ricevitore
+mostra limitazioni crescenti, motivando un ripensamento radicale
+dell'ambiente di propagazione. Le Intelligent Reflecting Surfaces
+(IRS) emergono come una tecnologia promettente per riconfigurare in
+modo intelligente l'ambiente di propagazione mediante il controllo di
+elementi riflettenti passivi a basso costo. Un'IRS è una superficie
+planare costituita da un elevato numero di elementi metavariabili il
+cui comportamento elettromagnetico può essere controllato
+indipendentemente, consentendo di modificare ampiezza e fase del
+segnale incidente e realizzare un beamforming passivo tridimensionale
+a grana fine. Questo approccio introduce un nuovo grado di libertà
+nella gestione del canale radio, permettendo di migliorare copertura,
+efficienza spettrale ed energetica, e di mitigare fenomeni di fading
+e interferenza, il tutto con costi di implementazione ridotti
+rispetto alle soluzioni tradizionali.
+
+L'integrazione delle IRS in sistemi Massive MIMO e in scenari 5G e
+oltre-5G comporta tuttavia sfide tecniche significative e ancora
+largamente inesplorate. Queste includono la modellazione accurata del
+canale in presence di superfici riflettenti passive, la progettazione
+congiunta dei beamforming attivi (lato trasmettitore/ricevitore) e
+passivi (lato IRS), l'acquisizione affidabile della Channel State
+Information (CSI) negli scenari multiutente e dinamici, e la gestione
+della complessità computazionale intrinseca in tali sistemi ibridi.
+La natura non convessa di molti problemi di ottimizzazione derivanti
+dalla struttura moltiplicativa dei canali IRS-assisted, unita alla
+necessità di adattamento continuo a condizioni di propagazione
+variabili, rende inadeguati gli approcci puramente analitici tradizionali.
+
+In questa prospettiva, le tecniche di Machine Learning rappresentano
+strumenti potenti e versatili per affrontare la complessità
+dimensionale e la non-linearità di reti IRS-aided. Gli algoritmi di
+apprendimento automatico possono essere impiegati sia per la
+modellazione dei fenomeni di propagazione e la predizione della CSI,
+sia per l'ottimizzazione autonoma e adattiva dei coefficienti di
+riflessione delle IRS sulla base di indicatori di prestazione
+misurati, sia per il posizionamento intelligente delle superfici
+riflettenti in ambienti complessi.
+
+L'obiettivo principale di questa tesi è proporre e valutare un
+framework comprensivo per l'analisi delle reti wireless assistite da
+IRS mediante tecniche di Machine Learning, con particolare attenzione
+alla modellazione del problema, all'algoritmi di apprendimento, e
+alla validazione mediante simulazioni e dataset realistici. In
+specifico, il lavoro si concentra su scenari caratterizzati da
+architetture Massive MIMO, comunicazioni in banda millimetrica e
+configurazioni multiutente, affrontando il problema della
+progettazione congiunta del beamforming attivo-passivo e
+dell'ottimizzazione dinamica delle superfici riflettenti.
+
+In sintesi, questa tesi combina analisi teorica, metodologie di
+Machine Learning e valutazioni sperimentali per proporre soluzioni
+concrete e riproducibili per l'ottimizzazione di reti wireless
+IRS-assisted, con l'intento di contribuire alla ricerca sulla
+tecnologia IRS e alle sue applicazioni in reti 5G e oltre.
+\enlargethispage{\baselineskip}
+
 \tableofcontents
 
 \cleardoublepage
