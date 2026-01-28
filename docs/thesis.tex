@@ -153,7 +153,60 @@ tecnologia IRS e alle sue applicazioni in reti 5G e oltre.
 \setcounter{page}{1}
 
 \chapter{Contesto, motivazione e obiettivi}
-\section{Contesto e problemi delle reti wireless indoor}
+\section{Problemi di copertura indoor nelle reti wireless}
+Negli ambienti indoor la copertura radio presenta sfide significative
+rispetto agli scenari outdoor a causa della complessità geometrica e
+dei materiali costruttivi. Le onde elettromagnetiche incontrano
+pareti, pavimenti, soffitti, mobili e altre superfici che causano
+attenuazione di penetrazione (penetration loss) variabile con la
+frequenza e con la tipologia di materiale; materiali come
+calcestruzzo, vetro stratificato o metallo possono introdurre perdite
+elevate e creare "zone d'ombra" attorno a sorgenti di segnale.
+
+Un altro fenomeno critico è il multipath: il segnale trasmesso arriva
+al ricevitore attraverso molteplici percorsi dovuti a riflessioni,
+diffrazioni e scattering. Questa ricombinazione di contributi può
+generare fading su piccola scala, variazioni rapide dell'ampiezza e
+della fase del segnale, e allungamento temporale dell'impulso (delay
+spread) che peggiora la qualità del collegamento e aumenta la
+probabilità di errori nella ricezione.
+
+La dipendenza dalla frequenza è particolarmente rilevante nelle bande
+mmWave: sebbene forniscano ampia larghezza di banda e alte capacità,
+presentano elevata attenuazione in presenza di ostacoli e sono
+fortemente sensibili al blocco da parte di elementi mobili (persone,
+porte) e fissi (mobili metallici). Questo rende la copertura mmWave
+in ambienti indoor molto non uniforme e suscettibile a interruzioni frequenti.
+
+La mobilità degli utenti e la presenza di ostacoli dinamici
+introducono ulteriori difficoltà: link temporaneamente non in linea
+di vista (NLOS) possono degradare drasticamente le prestazioni,
+richiedendo procedure di riconvergenza, ri-allineamento dei fasci
+(beam alignment) o handover verso altre celle o punti di accesso.
+
+La densificazione dell'infrastruttura (maggiore numero di access
+point o piccole celle) è una soluzione comune per migliorare la
+copertura, ma comporta costi di deployment, consumo energetico e
+complessità di gestione. Inoltre, in scenari ad alta densità
+l'interferenza tra celle può limitare i guadagni attesi e impone
+tecniche avanzate di coordinamento e gestione delle risorse.
+
+Le contromisure tradizionali, aumento della potenza di trasmissione,
+installazione di ulteriori apparati, uso di antenne direzionali o
+tecniche di diversity/MIMO, migliorano la robustezza del collegamento
+ma hanno limiti pratici legati a efficienza energetica, costi e
+complessità di acquisizione della Channel State Information (CSI) in
+scenari multiutente dinamici.
+
+Queste problematiche motivano l'adozione di approcci che agiscono
+direttamente sull'ambiente di propagazione, anziché limitarsi a
+ottimizzare esclusivamente trasmettitore e ricevitore. Le Intelligent
+Reflecting Surfaces (IRS) si inseriscono in questo contesto come
+possibile soluzione per riconfigurare il campo elettromagnetico in
+modo passivo e a basso costo, migliorando copertura e affidabilità in
+ambienti indoor complessi.
+\cite{itu_p1238_2025}
+
 \section{Limiti delle soluzioni tradizionali}
 \section{Intelligent Reflecting Surfaces: idea di base}
 \section{Obiettivi e contributi della tesi}
@@ -168,5 +221,8 @@ tecnologia IRS e alle sue applicazioni in reti 5G e oltre.
 \thispagestyle{empty}
 Qui possiamo ringraziare il mondo intero!!!!!!!!!!\\
 Ovviamente solo se uno vuole, non \`e obbligatorio.
+
+\bibliographystyle{plain}
+\bibliography{thesis}
 
 \end{document}
