@@ -208,8 +208,61 @@ ambienti indoor complessi.
 \cite{itu_p1238_2025}
 
 \section{Limiti delle soluzioni tradizionali}
+Le contromisure tradizionali per i problemi di copertura, aumento
+della potenza di trasmissione, densificazione dell'infrastruttura,
+impiego di antenne direzionali e tecniche MIMO avanzate, presentano
+limiti pratici e teorici rilevanti. L'aumento di potenza è spesso
+vincolato da limiti di normativa e da inefficienze energetiche; la
+densificazione comporta costi di deployment, complessità di gestione
+e peggioramento dell'interferenza in scenari ad alta densità; le
+architetture Massive MIMO, pur efficaci, implicano un aumento del
+numero di catene RF e della complessità di acquisizione della Channel
+State Information (CSI), soprattutto alle frequenze mmWave dove la
+sensibilità al blocco e l'attenuazione sono più pronunciate
+\cite{itu_m2410_2017,itu_p1238_2025,3gpp_tr38901}.
+
+Inoltre, molte soluzioni si concentrano esclusivamente su
+trasmettitore e ricevitore trascurando la possibilità di intervenire
+sull'ambiente di propagazione. Questo approccio mostra limiti
+crescenti quando la geometria degli spazi e i materiali causano
+penetrazioni e riflessioni complesse (tipiche degli scenari indoor),
+riducendo l'efficacia di metodi che si limitano a parametri lato
+stazione base o terminale.
+\enlargethispage{\baselineskip}
+
 \section{Intelligent Reflecting Surfaces: idea di base}
+Le Intelligent Reflecting Surfaces (IRS) propongono un paradigma
+diverso rispetto alle soluzioni tradizionali: invece di limitarsi a
+ottimizzare i nodi trasmissivi, si modifica attivamente l'ambiente di
+propagazione mediante superfici passive composte da un elevato numero
+di elementi elementari riconfigurabili. Ogni elemento può introdurre
+uno sfasamento (e, in alcune implementazioni, variazioni di ampiezza)
+al segnale incidente, permettendo di realizzare un beamforming
+passivo che ridistribuisce energia verso regioni d'interesse senza
+richiedere catene RF attive per ogni elemento \cite{3gpp_tr38857}.
+
+Dal punto di vista del controllo, il nucleo del problema è la scelta
+dei coefficiente di riflessione per gli elementi IRS in modo da
+massimizzare metriche quali potenza ricevuta, SNR o probabilità di
+copertura. La modellazione del canale in presenza di IRS introduce
+termini moltiplicativi che accrescono la non-convessità dei problemi
+di ottimizzazione e la complessità computazionale delle soluzioni
+classiche. Per questi motivi, le soluzioni basate su metodi
+euristici, ottimizzazione alternata e tecniche data-driven sono state
+proposte nella letteratura recente.
+
 \section{Obiettivi e contributi della tesi}
+Lo scopo di questo lavoro è sviluppare e valutare un metodo di
+controllo delle fasi basato su tecniche di Machine Learning per
+Intelligent Reflecting Surfaces (IRS) in scenari indoor. Il lavoro
+prevede la simulazione di un ambiente interno realistico e l'uso di
+algoritmi di apprendimento automatico (semplici e interpretabili) per
+stimare, a partire dalla posizione dell'utente, la configurazione di
+fase degli elementi IRS che massimizza la copertura e la potenza
+ricevuta. L'obiettivo finale è quantificare il guadagno di copertura
+e la robustezza ottenibili grazie all'IRS rispetto a configurazioni
+senza IRS o non ottimizzate, analizzando prestazioni in scenari
+multiutente e con canali tipici di bande mmWave.
 
 \chapter{Fondamenti teorici}
 \section{Propagazione radio in ambiente indoor}
