@@ -3,6 +3,7 @@
 \usepackage{graphicx}
 \usepackage{hyperref}
 \usepackage{setspace}
+\usepackage{amsmath}
 
 \usepackage[italian]{babel}
 \usepackage[italian]{cleveref}
@@ -250,8 +251,56 @@ senza IRS o non ottimizzate, analizzando prestazioni in scenari
 multiutente e con canali tipici di bande mmWave.
 
 \chapter{Fondamenti teorici}
+
 \section{Propagazione radio in ambiente indoor}
+Per modellare la propagazione radio indoor si adotta il modello di
+\emph{basic transmission loss} raccomandato da ITU-R P.1238
+\cite{itu_p1238_2025} per collegamenti base station--utente
+all'interno dello stesso edificio. In particolare, per scenari in cui
+trasmettitore e ricevitore si trovano sullo stesso piano, la perdita
+di percorso mediana è espressa come:
+
+\begin{equation}
+  L_b(\mathbf{d},\mathbf{f}) = \mathbf{A} + 10\,\mathbf{n}
+  \log_{10}(\mathbf{d}) + \mathbf{B} \log_{10}(\mathbf{f}) +
+  \mathbf{X}_\sigma \quad [\text{dB}]
+  \label{eq:itu_loss}
+\end{equation}
+
+dove $\mathbf{d}$ è la distanza tridimensionale tra trasmettitore e
+ricevitore (in metri), $\mathbf{f}$ la frequenza operativa (in GHz),
+$\mathbf{n}$ l'esponente di perdita di percorso, $\mathbf{A}$ e
+$\mathbf{B}$ coefficienti che modellano rispettivamente l'offset e la
+dipendenza dalla frequenza, mentre $\mathbf{X}_\sigma$ è una
+variabile aleatoria gaussiana a media nulla e deviazione standard
+$\boldsymbol{\sigma}$ che rappresenta lo \textbf{shadow fading}
+log-normale. I valori di $\mathbf{A}$, $\mathbf{n}$, $\mathbf{B}$ e
+$\boldsymbol{\sigma}$ sono forniti da ITU-R P.1238 per diversi
+ambienti (ufficio, corridoio, industriale, sala conferenze) e per
+condizioni LoS/NLoS; nel presente lavoro si adotta la configurazione
+``office NLoS'' nel range di distanza e frequenza coerente con le
+simulazioni IRS-assisted.
+
+Oltre alla perdita di percorso media, l'ambiente indoor è
+caratterizzato da \textbf{multipath} dovuto a riflessioni,
+diffrazioni e scattering su pareti, soffitti, pavimenti e arredo, che
+genera variazioni rapide di ampiezza e fase del segnale e un
+allungamento temporale dell'impulso. La risposta impulsiva del canale
+può essere descritta tramite il \textbf{power delay profile}, da cui
+si ricava il \textbf{r.m.s. delay spread}
+$\boldsymbol{\tau}_{\mathrm{rms}}$, che per ambienti d'ufficio tipici
+assume valori mediani compresi tra alcune decine e alcune centinaia
+di nanosecondi, con variazioni dipendenti da frequenza, dimensioni
+del locale e larghezza di banda angolare delle antenne. In linea con
+i dati riportati in ITU-R P.1238, per il caso di ufficio indoor si
+considera un delay spread r.m.s. dell'ordine di
+$\mathbf{50}$--$\mathbf{150}$ ns (valori di Tabella 7 per ambienti
+``office'' nelle bande GHz di interesse) e una deviazione standard
+dello shadow fading di circa 3--6 dB, a seconda della specifica
+combinazione ambiente/frequenza.
+
 \section{Principio di funzionamento delle IRS}
+
 \section{Modello di canale IRS-assisted}
 
 \clearpage{\pagestyle{empty}\cleardoublepage}
