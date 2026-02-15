@@ -300,8 +300,148 @@ dello shadow fading di circa 3--6 dB, a seconda della specifica
 combinazione ambiente/frequenza.
 
 \section{Principio di funzionamento delle IRS}
+Le \emph{Intelligent Reflecting Surfaces} (IRS) sono metasuperfici
+planari con $M$ elementi riconfigurabili (unit cells), spesso
+disposti su una griglia $N \times N$ con $M = N^2$
+\cite{3gpp_tr38857}. Ogni elemento modifica in modo controllato il
+segnale incidente; a differenza di una superficie riflettente passiva
+tradizionale, il comportamento elettromagnetico si può regolare in
+tempo reale tramite componenti come diodi PIN o varattori, senza
+catene RF attive per elemento.
+
+Il comportamento dell'elemento $m = 1, \dots, M$ si descrive con il
+coefficiente di riflessione complesso:
+\begin{equation}
+  \Gamma_m = \beta_m e^{j \theta_m},
+  \label{eq:reflection_coeff}
+\end{equation}
+dove $\theta_m \in [0, 2\pi)$ è la fase controllabile e $\beta_m \in
+[0,1]$ rappresenta l'attenuazione dovuta a perdite di inserzione
+($\beta_m \approx 0.9$--$1$ per implementazioni state-of-the-art).
+
+Il principio fisico è il \emph{beamforming passivo}: scegliendo le
+fasi $\{\theta_m\}_{m=1}^M$ in modo coerente, i contributi riflessi
+si sommano verso una direzione o una posizione obiettivo, aumentando
+il campo ricevuto nel regime far-field con un guadagno che cresce con
+$M$. Questo crea un cammino BS--IRS--UE controllabile, utile quando
+il collegamento diretto è indebolito da ostacoli indoor.
+
+Nella pratica entrano tre vincoli: la quantizzazione della fase,
+perché $\theta_m$ assume pochi livelli discreti (es. 2--3 bit,
+$K=4$--$8$ livelli) per semplificare l'hardware \cite{3gpp_tr38857};
+l'overhead di configurazione, dato che le fasi sono impostate dal
+controller IRS (via backhaul dalla BS) con latenza dell'ordine dei
+ms; e la dipendenza dalla posizione, per cui la configurazione ottima
+$\boldsymbol{\Theta}^\star = \arg\max_{\boldsymbol{\Theta}}
+P_r(\mathbf{p})$ varia con la posizione utente $\mathbf{p}$.
+
+\subsection{Motivazione per approcci basati su Machine Learning}
+Il problema di ottimizzazione delle fasi IRS per massimizzare la
+potenza ricevuta $P_r(\mathbf{p})$ o metriche correlate (SNR,
+copertura) presenta sfide computazionali significative. La struttura
+moltiplicativa del canale IRS-assisted (discussa nella Sezione 2.3)
+introduce termini non-convessi che rendono inadeguati metodi di
+ottimizzazione locale classici, i quali possono convergere a minimi
+locali subottimali. Tecniche come l'ottimizzazione alternata o i
+metodi di rilassamento semidefinito (SDR) forniscono soluzioni
+approssimate ma richiedono tempi di calcolo proibitivi per sistemi
+con elevato numero di elementi ($M \gg 100$) e aggiornamenti
+frequenti.
+
+Inoltre, la dipendenza dalla posizione $\mathbf{p}$ implica che la
+matrice di configurazione ottima $\boldsymbol{\Theta}^\star(\mathbf{p})$
+deve essere ricalcolata continuamente al variare della posizione
+utente, rendendo impraticabile l'uso di ottimizzazione iterativa in
+scenari dinamici o con mobilità elevata. Per questi motivi, approcci
+\emph{data-driven} basati su Machine Learning rappresentano una
+alternativa promettente: un modello addestrato su dataset di coppie
+$(\mathbf{p}, \boldsymbol{\Theta}^\star)$ generati tramite simulazioni
+di canali indoor realistici può apprendere la mappatura $\mathbf{p}
+\mapsto \{\theta_m\}$ in modo efficiente, fornendo previsioni in
+tempo reale con complessità computazionale ridotta rispetto a metodi
+iterativi. Nel presente lavoro si esplorano algoritmi semplici e
+interpretabili (regressione, alberi decisionali, reti neurali
+compatte) per stimare la configurazione di fase ottimale a partire
+dalle coordinate $(x, y)$ dell'utente, valutando il guadagno di
+copertura ottenuto in ambienti indoor caratterizzati da propagazione
+multipath e blocco.
 
 \section{Modello di canale IRS-assisted}
+In uno scenario IRS-assisted, il collegamento tra base station (BS) e
+utente (UE) è mediato dalla superficie riflettente. Supponendo che la
+BS trasmetta con potenza $P_t$ e che il canale presenti attenuazione
+di percorso su due tratte (BS→IRS e IRS→UE), si ottiene un modello a
+due hop per la potenza ricevuta.
+
+Sia $\mathbf{h}_{\text{BI}} \in \mathbf{C}^M$ il vettore di canale
+tra BS e gli $M$ elementi IRS, e sia $\mathbf{h}_{\text{IU}} \in
+\mathbf{C}^M$ il vettore di canale tra IRS e UE. Il canale
+complessivo BS→IRS→UE si esprime come:
+\begin{equation}
+  h_{\text{eff}} = \mathbf{h}_{\text{IU}}^H \,
+  \text{diag}(\boldsymbol{\Gamma}) \, \mathbf{h}_{\text{BI}},
+  \label{eq:h_eff}
+\end{equation}
+dove $\boldsymbol{\Gamma} = [\Gamma_1, \dots, \Gamma_M]^T$ è il
+vettore dei coefficienti di riflessione
+\eqref{eq:reflection_coeff}, e $\text{diag}(\boldsymbol{\Gamma})$ è
+la matrice diagonale con gli $\Gamma_m$ sulla diagonale. Assumendo
+per semplicità $\beta_m = 1$ (riflessione ideale senza perdite
+resistive), si ha $\boldsymbol{\Gamma} = e^{j\boldsymbol{\theta}}$
+con $\boldsymbol{\theta} = [\theta_1, \dots, \theta_M]^T$.
+
+La potenza ricevuta all'utente in posizione $\mathbf{p} = (x, y, z)$
+è dunque:
+\begin{equation}
+  P_r(\mathbf{p}, \boldsymbol{\theta}) = P_t \, |h_{\text{eff}}|^2
+  = P_t \left| \mathbf{h}_{\text{IU}}^H \,
+  \text{diag}(e^{j\boldsymbol{\theta}}) \,
+  \mathbf{h}_{\text{BI}} \right|^2.
+  \label{eq:P_r}
+\end{equation}
+
+Per modellare i vettori di canale $\mathbf{h}_{\text{BI}}$ e
+$\mathbf{h}_{\text{IU}}$, si adotta un modello geometrico
+semplificato coerente con la propagazione indoor descritta nella
+Sezione 2.1. In particolare, ogni elemento di canale $h_{\text{BI},m}$
+e $h_{\text{IU},m}$ include:
+\begin{itemize}
+  \item \textbf{Path loss}: calcolato mediante \eqref{eq:itu_loss} in
+    funzione della distanza $d_{\text{BI},m}$ (BS→elemento $m$) e
+    $d_{\text{IU},m}$ (elemento $m$→UE), con parametri ambiente-specifici;
+  \item \textbf{Shadow fading}: termine gaussiano log-normale
+    $X_\sigma$ con deviazione standard tipica 3--6 dB;
+  \item \textbf{Small-scale fading}: fase uniforme in $[0, 2\pi)$ per
+    simulare multipath in regime narrowband o OFDM su sottoportante singola.
+\end{itemize}
+
+Questo modello cattura la geometria dell'ambiente e l'effetto della
+posizione utente $\mathbf{p}$ sui percorsi riflessi. Il problema di
+ottimizzazione consiste nel determinare $\boldsymbol{\theta}^\star(\mathbf{p})$
+che massimizza \eqref{eq:P_r}:
+\begin{equation}
+  \boldsymbol{\theta}^\star(\mathbf{p}) = \arg\max_{\boldsymbol{\theta}
+  \in [0, 2\pi)^M} P_r(\mathbf{p}, \boldsymbol{\theta}),
+  \label{eq:opt_problem}
+\end{equation}
+soggetto ai vincoli di quantizzazione (fasi discrete a $K$ livelli) e
+ai limiti hardware. La non-convessità di \eqref{eq:opt_problem} e la
+dimensionalità elevata ($M$ variabili) rendono questo problema
+computazionalmente complesso, motivando l'adozione di approcci
+data-driven descritti nel Capitolo 3.
+
+Inoltre, in scenari realistici è possibile che esista anche un
+collegamento diretto BS→UE; in tal caso la potenza totale ricevuta è:
+\begin{equation}
+  P_r^{\text{tot}}(\mathbf{p}, \boldsymbol{\theta}) = P_t \,
+  \left| h_{\text{direct}}(\mathbf{p}) + h_{\text{eff}}(\mathbf{p},
+  \boldsymbol{\theta}) \right|^2,
+  \label{eq:P_r_tot}
+\end{equation}
+dove $h_{\text{direct}}(\mathbf{p})$ è il canale diretto con path
+loss e fading propri. Nelle simulazioni si considereranno entrambi i
+casi (con e senza link diretto) per valutare l'impatto dell'IRS in
+scenari di blocco completo (NLoS severo) e parziale.
 
 \clearpage{\pagestyle{empty}\cleardoublepage}
 \chapter*{Ringraziamenti}
