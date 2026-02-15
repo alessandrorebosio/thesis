@@ -184,20 +184,6 @@ di vista (NLOS) possono degradare drasticamente le prestazioni,
 richiedendo procedure di riconvergenza, ri-allineamento dei fasci
 (beam alignment) o handover verso altre celle o punti di accesso.
 
-La densificazione dell'infrastruttura (maggiore numero di access
-point o piccole celle) è una soluzione comune per migliorare la
-copertura, ma comporta costi di deployment, consumo energetico e
-complessità di gestione. Inoltre, in scenari ad alta densità
-l'interferenza tra celle può limitare i guadagni attesi e impone
-tecniche avanzate di coordinamento e gestione delle risorse.
-
-Le contromisure tradizionali, aumento della potenza di trasmissione,
-installazione di ulteriori apparati, uso di antenne direzionali o
-tecniche di diversity/MIMO, migliorano la robustezza del collegamento
-ma hanno limiti pratici legati a efficienza energetica, costi e
-complessità di acquisizione della Channel State Information (CSI) in
-scenari multiutente dinamici.
-
 Queste problematiche motivano l'adozione di approcci che agiscono
 direttamente sull'ambiente di propagazione, anziché limitarsi a
 ottimizzare esclusivamente trasmettitore e ricevitore. Le Intelligent
@@ -208,17 +194,15 @@ ambienti indoor complessi.
 \cite{itu_p1238_2025}
 
 \section{Limiti delle soluzioni tradizionali}
-Le contromisure tradizionali per i problemi di copertura, aumento
-della potenza di trasmissione, densificazione dell'infrastruttura,
-impiego di antenne direzionali e tecniche MIMO avanzate, presentano
-limiti pratici e teorici rilevanti. L'aumento di potenza è spesso
-vincolato da limiti di normativa e da inefficienze energetiche; la
-densificazione comporta costi di deployment, complessità di gestione
-e peggioramento dell'interferenza in scenari ad alta densità; le
-architetture Massive MIMO, pur efficaci, implicano un aumento del
-numero di catene RF e della complessità di acquisizione della Channel
-State Information (CSI), soprattutto alle frequenze mmWave dove la
-sensibilità al blocco e l'attenuazione sono più pronunciate
+Le soluzioni tradizionali (aumento di potenza, densificazione,
+antenne direzionali e Massive MIMO) presentano limiti rilevanti.
+L'aumento di potenza è vincolato da normative e inefficienze
+energetiche; la densificazione comporta costi elevati, complessità di
+gestione e maggiore interferenza. Le architetture Massive MIMO,
+sebbene efficaci, richiedono numerose catene RF e introducono elevata
+complessità nell'acquisizione della Channel State Information (CSI),
+soprattutto alle frequenze mmWave dove sensibilità al blocco e
+attenuazione sono più pronunciate
 \cite{itu_m2410_2017,itu_p1238_2025,3gpp_tr38901}.
 
 Inoltre, molte soluzioni si concentrano esclusivamente su
@@ -239,7 +223,8 @@ di elementi elementari riconfigurabili. Ogni elemento può introdurre
 uno sfasamento (e, in alcune implementazioni, variazioni di ampiezza)
 al segnale incidente, permettendo di realizzare un beamforming
 passivo che ridistribuisce energia verso regioni d'interesse senza
-richiedere catene RF attive per ogni elemento \cite{3gpp_tr38857}.
+richiedere catene RF attive per ogni elemento
+\cite{wu2021irs,3gpp_tr38857}.
 
 Dal punto di vista del controllo, il nucleo del problema è la scelta
 dei coefficiente di riflessione per gli elementi IRS in modo da
