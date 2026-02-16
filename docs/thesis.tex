@@ -74,15 +74,16 @@ significativo, contribuendo al raggiungimento di ambiziosi obiettivi
 di capacità almeno mille volte superiore alle tecnologie precedenti e
 connettività ubiqua per decine di miliardi di dispositivi. Questo
 risultato è stato reso possibile dall'impiego di soluzioni
-tecnologiche avanzate, quali il Massive MIMO, le comunicazioni in
-banda millimetrica (mmWave) e le reti ultra-dense (Ultra Dense Networks, UDN).
+tecnologiche avanzate, quali il Multiple-Input Multiple-Output
+Massivo (Massive MIMO), le comunicazioni in banda millimetrica
+(mmWave) e le reti ultra-dense (Ultra Dense Networks, UDN).
 
 Nonostante i significativi benefici apportati, le reti 5G continuano
 a presentare criticità rilevanti legate alla complessità hardware, ai
 costi di implementazione e al consumo energetico. In particolare,
 l'estensione del Massive MIMO dalle bande sub-6 GHz alle frequenze
 millimetriche richiede architetture altamente complesse, maggior
-numero di catene RF (radio frequency chains) e hardware sofisticato e
+numero di catene a radiofrequenza (RF) e hardware sofisticato e
 costoso dal punto di vista energetico. Parallelamente, la
 propagazione in banda mmWave risulta fortemente penalizzata dalla
 vulnerabilità al blocco indoor e dai fenomeni di attenuazione,
@@ -111,17 +112,17 @@ oltre-5G comporta tuttavia sfide tecniche significative e ancora
 largamente inesplorate. Queste includono la modellazione accurata del
 canale in presence di superfici riflettenti passive, la progettazione
 congiunta dei beamforming attivi (lato trasmettitore/ricevitore) e
-passivi (lato IRS), l'acquisizione affidabile della Channel State
-Information (CSI) negli scenari multiutente e dinamici, e la gestione
+passivi (lato IRS), l'acquisizione affidabile della CSI negli scenari
+multiutente e dinamici, e la gestione
 della complessità computazionale intrinseca in tali sistemi ibridi.
 La natura non convessa di molti problemi di ottimizzazione derivanti
-dalla struttura moltiplicativa dei canali IRS-assisted, unita alla
+dalla struttura moltiplicativa dei canali assistiti da IRS, unita alla
 necessità di adattamento continuo a condizioni di propagazione
 variabili, rende inadeguati gli approcci puramente analitici tradizionali.
 
 In questa prospettiva, le tecniche di Machine Learning rappresentano
 strumenti potenti e versatili per affrontare la complessità
-dimensionale e la non-linearità di reti IRS-aided. Gli algoritmi di
+dimensionale e la non-linearità di reti assistite da IRS. Gli algoritmi di
 apprendimento automatico possono essere impiegati sia per la
 modellazione dei fenomeni di propagazione e la predizione della CSI,
 sia per l'ottimizzazione autonoma e adattiva dei coefficienti di
@@ -132,20 +133,15 @@ riflettenti in ambienti complessi.
 L'obiettivo principale di questa tesi è proporre e valutare un
 framework comprensivo per l'analisi delle reti wireless assistite da
 IRS mediante tecniche di Machine Learning, con particolare attenzione
-alla modellazione del problema, all'algoritmi di apprendimento, e
-alla validazione mediante simulazioni e dataset realistici. In
-specifico, il lavoro si concentra su scenari caratterizzati da
-architetture Massive MIMO, comunicazioni in banda millimetrica e
-configurazioni multiutente, affrontando il problema della
-progettazione congiunta del beamforming attivo-passivo e
-dell'ottimizzazione dinamica delle superfici riflettenti.
+alla modellazione del problema, agli algoritmi di apprendimento, e
+alla validazione mediante simulazioni. In specifico, il lavoro affronta
+l'ottimizzazione dinamica delle IRS in scenari Massive MIMO e mmWave.
 
 In sintesi, questa tesi combina analisi teorica, metodologie di
 Machine Learning e valutazioni sperimentali per proporre soluzioni
 concrete e riproducibili per l'ottimizzazione di reti wireless
-IRS-assisted, con l'intento di contribuire alla ricerca sulla
+assistite da IRS, con l'intento di contribuire alla ricerca sulla
 tecnologia IRS e alle sue applicazioni in reti 5G e oltre.
-\enlargethispage{\baselineskip}
 
 \tableofcontents
 
@@ -180,8 +176,8 @@ porte) e fissi (mobili metallici). Questo rende la copertura mmWave
 in ambienti indoor molto non uniforme e suscettibile a interruzioni frequenti.
 
 La mobilità degli utenti e la presenza di ostacoli dinamici
-introducono ulteriori difficoltà: link temporaneamente non in linea
-di vista (NLOS) possono degradare drasticamente le prestazioni,
+introducono ulteriori difficoltà: link temporaneamente Non in Linea
+di Vista (NLoS) possono degradare drasticamente le prestazioni,
 richiedendo procedure di riconvergenza, ri-allineamento dei fasci
 (beam alignment) o handover verso altre celle o punti di accesso.
 
@@ -201,7 +197,8 @@ L'aumento di potenza è vincolato da normative e inefficienze
 energetiche; la densificazione comporta costi elevati, complessità di
 gestione e maggiore interferenza. Le architetture Massive MIMO,
 sebbene efficaci, richiedono numerose catene RF e introducono elevata
-complessità nell'acquisizione della Channel State Information (CSI),
+complessità nell'acquisizione dell'Informazione sullo Stato del
+Canale (Channel State Information, CSI),
 soprattutto alle frequenze mmWave dove sensibilità al blocco e
 attenuazione sono più pronunciate
 \cite{itu_m2410_2017,itu_p1238_2025,3gpp_tr38901}.
@@ -229,7 +226,8 @@ richiedere catene RF attive per ogni elemento
 
 Dal punto di vista del controllo, il nucleo del problema è la scelta
 dei coefficiente di riflessione per gli elementi IRS in modo da
-massimizzare metriche quali potenza ricevuta, SNR o probabilità di
+massimizzare metriche quali potenza ricevuta, Rapporto
+Segnale-Rumore (Signal-to-Noise Ratio, SNR) o probabilità di
 copertura. La modellazione del canale in presenza di IRS introduce
 termini moltiplicativi che accrescono la non-convessità dei problemi
 di ottimizzazione e la complessità computazionale delle soluzioni
@@ -254,7 +252,8 @@ multiutente e con canali tipici di bande mmWave.
 
 \section{Propagazione radio in ambiente indoor}
 Per modellare la propagazione radio indoor si adotta il modello di
-\emph{basic transmission loss} raccomandato da ITU-R P.1238
+\emph{basic transmission loss} raccomandato dall'International
+Telecommunication Union - Radiocommunication Sector (ITU-R) P.1238
 \cite{itu_p1238_2025} per collegamenti base station--utente
 all'interno dello stesso edificio. In particolare, per scenari in cui
 trasmettitore e ricevitore si trovano sullo stesso piano, la perdita
@@ -277,9 +276,9 @@ $\boldsymbol{\sigma}$ che rappresenta lo \textbf{shadow fading}
 log-normale. I valori di $\mathbf{A}$, $\mathbf{n}$, $\mathbf{B}$ e
 $\boldsymbol{\sigma}$ sono forniti da ITU-R P.1238 per diversi
 ambienti (ufficio, corridoio, industriale, sala conferenze) e per
-condizioni LoS/NLoS; nel presente lavoro si adotta la configurazione
-``office NLoS'' nel range di distanza e frequenza coerente con le
-simulazioni IRS-assisted.
+condizioni In Linea di Vista (Line of Sight, LoS)/NLoS; nel presente
+lavoro si adotta la configurazione ``office NLoS'' nel range di
+distanza e frequenza coerente con le simulazioni assistite da IRS.
 
 Oltre alla perdita di percorso media, l'ambiente indoor è
 caratterizzato da \textbf{multipath} dovuto a riflessioni,
@@ -287,13 +286,13 @@ diffrazioni e scattering su pareti, soffitti, pavimenti e arredo, che
 genera variazioni rapide di ampiezza e fase del segnale e un
 allungamento temporale dell'impulso. La risposta impulsiva del canale
 può essere descritta tramite il \textbf{power delay profile}, da cui
-si ricava il \textbf{r.m.s. delay spread}
-$\boldsymbol{\tau}_{\mathrm{rms}}$, che per ambienti d'ufficio tipici
-assume valori mediani compresi tra alcune decine e alcune centinaia
-di nanosecondi, con variazioni dipendenti da frequenza, dimensioni
-del locale e larghezza di banda angolare delle antenne. In linea con
-i dati riportati in ITU-R P.1238, per il caso di ufficio indoor si
-considera un delay spread r.m.s. dell'ordine di
+si ricava il \textbf{delay spread a media quadratica (root mean
+square, r.m.s.)} $\boldsymbol{\tau}_{\mathrm{rms}}$, che per
+ambienti d'ufficio tipici assume valori mediani compresi tra alcune
+decine e alcune centinaia di nanosecondi, con variazioni dipendenti
+da frequenza, dimensioni del locale e larghezza di banda angolare
+delle antenne. In linea con i dati riportati in ITU-R P.1238, per il
+caso di ufficio indoor si considera un delay spread r.m.s. dell'ordine di
 $\mathbf{50}$--$\mathbf{150}$ ns (valori di Tabella 7 per ambienti
 ``office'' nelle bande GHz di interesse) e una deviazione standard
 dello shadow fading di circa 3--6 dB, a seconda della specifica
@@ -306,8 +305,8 @@ disposti su una griglia $N \times N$ con $M = N^2$
 \cite{3gpp_tr38857}. Ogni elemento modifica in modo controllato il
 segnale incidente; a differenza di una superficie riflettente passiva
 tradizionale, il comportamento elettromagnetico si può regolare in
-tempo reale tramite componenti come diodi PIN o varattori, senza
-catene RF attive per elemento.
+tempo reale tramite componenti come diodi p-i-n (p-type intrinsic n-type,
+PIN) o varattori, senza catene RF attive per elemento.
 
 Il comportamento dell'elemento $m = 1, \dots, M$ si descrive con il
 coefficiente di riflessione complesso:
@@ -323,7 +322,7 @@ Il principio fisico è il \emph{beamforming passivo}: scegliendo le
 fasi $\{\theta_m\}_{m=1}^M$ in modo coerente, i contributi riflessi
 si sommano verso una direzione o una posizione obiettivo, aumentando
 il campo ricevuto nel regime far-field con un guadagno che cresce con
-$M$. Questo crea un cammino BS--IRS--UE controllabile, utile quando
+$M$. Questo crea un cammino Stazione Base (Base Station, BS)--IRS--Equipaggiamento Utente (User Equipment, UE) controllabile, utile quando
 il collegamento diretto è indebolito da ostacoli indoor.
 
 Nella pratica entrano tre vincoli: la quantizzazione della fase,
@@ -339,11 +338,12 @@ P_r(\mathbf{p})$ varia con la posizione utente $\mathbf{p}$.
 Il problema di ottimizzazione delle fasi IRS per massimizzare la
 potenza ricevuta $P_r(\mathbf{p})$ o metriche correlate (SNR,
 copertura) presenta sfide computazionali significative. La struttura
-moltiplicativa del canale IRS-assisted (discussa nella Sezione 2.3)
+moltiplicativa del canale assistito da IRS (discussa nella Sezione 2.3)
 introduce termini non-convessi che rendono inadeguati metodi di
 ottimizzazione locale classici, i quali possono convergere a minimi
 locali subottimali. Tecniche come l'ottimizzazione alternata o i
-metodi di rilassamento semidefinito (SDR) forniscono soluzioni
+metodi di rilassamento semidefinito (Semidefinite Relaxation, SDR)
+forniscono soluzioni
 approssimate ma richiedono tempi di calcolo proibitivi per sistemi
 con elevato numero di elementi ($M \gg 100$) e aggiornamenti
 frequenti.
@@ -366,9 +366,9 @@ dalle coordinate $(x, y)$ dell'utente, valutando il guadagno di
 copertura ottenuto in ambienti indoor caratterizzati da propagazione
 multipath e blocco.
 
-\section{Modello di canale IRS-assisted}
-In uno scenario IRS-assisted, il collegamento tra base station (BS) e
-utente (UE) è mediato dalla superficie riflettente. Supponendo che la
+\section{Modello di canale assistito da IRS}
+In uno scenario assistito da IRS, il collegamento tra BS e
+UE è mediato dalla superficie riflettente. Supponendo che la
 BS trasmetta con potenza $P_t$ e che il canale presenti attenuazione
 di percorso su due tratte (BS→IRS e IRS→UE), si ottiene un modello a
 due hop per la potenza ricevuta.
@@ -412,7 +412,9 @@ e $h_{\text{IU},m}$ include:
   \item \textbf{Shadow fading}: termine gaussiano log-normale
     $X_\sigma$ con deviazione standard tipica 3--6 dB;
   \item \textbf{Small-scale fading}: fase uniforme in $[0, 2\pi)$ per
-    simulare multipath in regime narrowband o OFDM su sottoportante singola.
+    simulare multipath in regime narrowband o Multiplazione a Divisione di Frequenza Ortogonale
+    (Orthogonal Frequency-Division Multiplexing, OFDM) su sottoportante
+    singola.
 \end{itemize}
 
 Questo modello cattura la geometria dell'ambiente e l'effetto della
