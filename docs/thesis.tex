@@ -322,7 +322,9 @@ Il principio fisico è il \emph{beamforming passivo}: scegliendo le
 fasi $\{\theta_m\}_{m=1}^M$ in modo coerente, i contributi riflessi
 si sommano verso una direzione o una posizione obiettivo, aumentando
 il campo ricevuto nel regime far-field con un guadagno che cresce con
-$M$. Questo crea un cammino Stazione Base (Base Station, BS)--IRS--Equipaggiamento Utente (User Equipment, UE) controllabile, utile quando
+$M$. Questo crea un cammino Stazione Base (Base Station,
+BS)--IRS--Equipaggiamento Utente (User Equipment, UE) controllabile,
+utile quando
 il collegamento diretto è indebolito da ostacoli indoor.
 
 Nella pratica entrano tre vincoli: la quantizzazione della fase,
@@ -366,12 +368,14 @@ dalle coordinate $(x, y)$ dell'utente, valutando il guadagno di
 copertura ottenuto in ambienti indoor caratterizzati da propagazione
 multipath e blocco.
 
+\newpage
 \section{Modello di canale assistito da IRS}
-In uno scenario assistito da IRS, il collegamento tra BS e
-UE è mediato dalla superficie riflettente. Supponendo che la
-BS trasmetta con potenza $P_t$ e che il canale presenti attenuazione
-di percorso su due tratte (BS→IRS e IRS→UE), si ottiene un modello a
-due hop per la potenza ricevuta.
+In uno scenario assistito da IRS, il collegamento tra BS e UE è
+mediato dalla superficie riflettente. Supponendo che la BS trasmetta
+con potenza $P_t$ e che il canale presenti attenuazione di percorso
+su due tratte (BS$\rightarrow$IRS e IRS$\rightarrow$UE), si ottiene
+un modello a due hop per la potenza ricevuta, coerente con i canali
+cascaded BS-IRS-UE proposti \cite{guo2021cascaded}.
 
 Sia $\mathbf{h}_{\text{BI}} \in \mathbf{C}^M$ il vettore di canale
 tra BS e gli $M$ elementi IRS, e sia $\mathbf{h}_{\text{IU}} \in
@@ -383,44 +387,47 @@ complessivo BS→IRS→UE si esprime come:
   \label{eq:h_eff}
 \end{equation}
 dove $\boldsymbol{\Gamma} = [\Gamma_1, \dots, \Gamma_M]^T$ è il
-vettore dei coefficienti di riflessione
-\eqref{eq:reflection_coeff}, e $\text{diag}(\boldsymbol{\Gamma})$ è
-la matrice diagonale con gli $\Gamma_m$ sulla diagonale. Assumendo
-per semplicità $\beta_m = 1$ (riflessione ideale senza perdite
-resistive), si ha $\boldsymbol{\Gamma} = e^{j\boldsymbol{\theta}}$
-con $\boldsymbol{\theta} = [\theta_1, \dots, \theta_M]^T$.
+vettore dei coefficienti di riflessione \eqref{eq:reflection_coeff},
+e $\text{diag}(\boldsymbol{\Gamma})$ è la matrice diagonale con gli
+$\Gamma_m$ sulla diagonale (cfr. modello $\mathbf{H}{I,k} =
+  \mathbf{G}^T \mathrm{diag}(\mathbf{h}{r,k})$ per casi MISO in
+\cite{guo2021cascaded}). Assumendo per semplicità $\beta_m = 1$
+(riflessione ideale senza perdite resistive), si ha
+$\boldsymbol{\Gamma} = e^{j\boldsymbol{\theta}}$ con
+$\boldsymbol{\theta} = [\theta_1, \dots, \theta_M]^T$.
 
-La potenza ricevuta all'utente in posizione $\mathbf{p} = (x, y, z)$
-è dunque:
-\begin{equation}
-  P_r(\mathbf{p}, \boldsymbol{\theta}) = P_t \, |h_{\text{eff}}|^2
-  = P_t \left| \mathbf{h}_{\text{IU}}^H \,
-  \text{diag}(e^{j\boldsymbol{\theta}}) \,
-  \mathbf{h}_{\text{BI}} \right|^2.
-  \label{eq:P_r}
-\end{equation}
+\subsection{Modellazione dei canali}
 
-Per modellare i vettori di canale $\mathbf{h}_{\text{BI}}$ e
-$\mathbf{h}_{\text{IU}}$, si adotta un modello geometrico
-semplificato coerente con la propagazione indoor descritta nella
-Sezione 2.1. In particolare, ogni elemento di canale $h_{\text{BI},m}$
-e $h_{\text{IU},m}$ include:
+Per modellare i vettori di canale $\mathbf{h}{\text{BI}}$ e
+$\mathbf{h}{\text{IU}}$, si adotta un modello geometrico semplificato
+coerente con la propagazione indoor descritta nella Sezione 2.1 e con
+scenari sub-6 GHz non-sparsi in \cite{guo2021cascaded}. In
+particolare, ogni elemento di canale $h_{\text{BI},m}$ e
+$h_{\text{IU},m}$ include:
+
 \begin{itemize}
   \item \textbf{Path loss}: calcolato mediante \eqref{eq:itu_loss} in
-    funzione della distanza $d_{\text{BI},m}$ (BS→elemento $m$) e
-    $d_{\text{IU},m}$ (elemento $m$→UE), con parametri ambiente-specifici;
+    funzione della distanza $d_{\text{BI},m}$
+    (BS$\rightarrow$elemento $m$) e $d_{\text{IU},m}$ (elemento
+    $m$$\rightarrow$UE), con parametri ambiente-specifici \cite{itu_p1238_2025};
   \item \textbf{Shadow fading}: termine gaussiano log-normale
     $X_\sigma$ con deviazione standard tipica 3--6 dB;
   \item \textbf{Small-scale fading}: fase uniforme in $[0, 2\pi)$ per
-    simulare multipath in regime narrowband o Multiplazione a Divisione di Frequenza Ortogonale
-    (Orthogonal Frequency-Division Multiplexing, OFDM) su sottoportante
-    singola.
+    simulare multipath in regime narrowband o OFDM su sottoportante singola.
 \end{itemize}
 
 Questo modello cattura la geometria dell'ambiente e l'effetto della
-posizione utente $\mathbf{p}$ sui percorsi riflessi. Il problema di
-ottimizzazione consiste nel determinare $\boldsymbol{\theta}^\star(\mathbf{p})$
-che massimizza \eqref{eq:P_r}:
+posizione utente $\mathbf{p}$ sui percorsi riflessi.
+
+La potenza ricevuta via IRS è quindi:
+\begin{equation}
+  P_r(\mathbf{p}, \boldsymbol{\theta}) = P_t \left| h_{\text{eff}}(\mathbf{p}, \boldsymbol{\theta}) \right|^2.
+  \label{eq:P_r}
+\end{equation}
+
+\subsection{Problema di ottimizzazione}
+Il problema di ottimizzazione consiste nel determinare
+$\boldsymbol{\theta}^\star(\mathbf{p})$ che massimizza \eqref{eq:P_r}:
 \begin{equation}
   \boldsymbol{\theta}^\star(\mathbf{p}) = \arg\max_{\boldsymbol{\theta}
   \in [0, 2\pi)^M} P_r(\mathbf{p}, \boldsymbol{\theta}),
@@ -430,19 +437,22 @@ soggetto ai vincoli di quantizzazione (fasi discrete a $K$ livelli) e
 ai limiti hardware. La non-convessità di \eqref{eq:opt_problem} e la
 dimensionalità elevata ($M$ variabili) rendono questo problema
 computazionalmente complesso, motivando l'adozione di approcci
-data-driven descritti nel Capitolo 3.
+data-driven (cfr. ottimizzazioni per phase
+shifting in \cite{guo2021cascaded}).
 
 Inoltre, in scenari realistici è possibile che esista anche un
-collegamento diretto BS→UE; in tal caso la potenza totale ricevuta è:
+collegamento diretto BS$\rightarrow$UE; in tal caso la potenza totale
+ricevuta è:
 \begin{equation}
-  P_r^{\text{tot}}(\mathbf{p}, \boldsymbol{\theta}) = P_t \,
+  P_r^{\text{tot}}(\mathbf{p}, \boldsymbol{\theta}) = P_t ,
   \left| h_{\text{direct}}(\mathbf{p}) + h_{\text{eff}}(\mathbf{p},
   \boldsymbol{\theta}) \right|^2,
   \label{eq:P_r_tot}
 \end{equation}
 dove $h_{\text{direct}}(\mathbf{p})$ è il canale diretto con path
-loss e fading propri. Nelle simulazioni si considereranno entrambi i
-casi (con e senza link diretto) per valutare l'impatto dell'IRS in
+loss e fading propri, come nel modello con $h_{d,k}$ di
+\cite{guo2021cascaded}. Nelle simulazioni si considereranno entrambi
+i casi (con e senza link diretto) per valutare l'impatto dell'IRS in
 scenari di blocco completo (NLoS severo) e parziale.
 
 \clearpage{\pagestyle{empty}\cleardoublepage}
