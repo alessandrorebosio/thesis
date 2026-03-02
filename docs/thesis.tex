@@ -4,6 +4,7 @@
 \usepackage{hyperref}
 \usepackage{setspace}
 \usepackage{amsmath}
+\usepackage{amssymb}
 
 \usepackage[italian]{babel}
 \usepackage[italian]{cleveref}
@@ -63,6 +64,7 @@
 
 \pagenumbering{roman}
 \chapter*{Introduzione}
+\label{chap:introduzione}
 \addcontentsline{toc}{chapter}{Introduzione}
 
 Negli ultimi anni l'evoluzione delle reti di comunicazione wireless
@@ -152,6 +154,8 @@ tecnologia IRS e alle sue applicazioni in reti 5G e oltre.
 \setcounter{page}{1}
 
 \chapter{Contesto, motivazione e obiettivi}
+\label{chap:contesto}
+
 \section{Problemi di copertura indoor nelle reti wireless}
 Negli ambienti indoor la copertura radio presenta sfide significative
 rispetto agli scenari outdoor a causa della complessità geometrica e
@@ -251,6 +255,7 @@ senza IRS o non ottimizzate, analizzando prestazioni in scenari
 multiutente e con canali tipici di bande mmWave.
 
 \chapter{Fondamenti teorici}
+\label{chap:fondamenti}
 
 \section{Propagazione radio in ambiente indoor}
 Per modellare la propagazione radio indoor si adotta il modello di
@@ -379,20 +384,20 @@ su due tratte (BS$\rightarrow$IRS e IRS$\rightarrow$UE), si ottiene
 un modello a due hop per la potenza ricevuta, coerente con i canali
 cascaded BS-IRS-UE proposti \cite{guo2021cascaded}.
 
-Sia $\mathbf{h}_{\text{BI}} \in \mathbf{C}^M$ il vettore di canale
+Sia $\mathbf{h}_{\text{BI}} \in \mathbb{C}^M$ il vettore di canale
 tra BS e gli $M$ elementi IRS, e sia $\mathbf{h}_{\text{IU}} \in
-\mathbf{C}^M$ il vettore di canale tra IRS e UE. Il canale
+\mathbb{C}^M$ il vettore di canale tra IRS e UE. Il canale
 complessivo BS→IRS→UE si esprime come:
 \begin{equation}
   h_{\text{eff}} = \mathbf{h}_{\text{IU}}^H \,
   \text{diag}(\boldsymbol{\Gamma}) \, \mathbf{h}_{\text{BI}},
-  \label{eq:h_eff}
+  \label{eq:heff}
 \end{equation}
 dove $\boldsymbol{\Gamma} = [\Gamma_1, \dots, \Gamma_M]^T$ è il
 vettore dei coefficienti di riflessione \eqref{eq:reflection_coeff},
 e $\text{diag}(\boldsymbol{\Gamma})$ è la matrice diagonale con gli
-$\Gamma_m$ sulla diagonale (cfr. modello $\mathbf{H}{I,k} =
-  \mathbf{G}^T \mathrm{diag}(\mathbf{h}{r,k})$ per casi MISO in
+$\Gamma_m$ sulla diagonale (cfr. modello $\mathbf{H}_{I,k} =
+  \mathbf{G}^T \mathrm{diag}(\mathbf{h}_{r,k})$ per casi MISO in
 \cite{guo2021cascaded}). Assumendo per semplicità $\beta_m = 1$
 (riflessione ideale senza perdite resistive), si ha
 $\boldsymbol{\Gamma} = e^{j\boldsymbol{\theta}}$ con
@@ -400,8 +405,8 @@ $\boldsymbol{\theta} = [\theta_1, \dots, \theta_M]^T$.
 
 \subsection{Modellazione dei canali}
 
-Per modellare i vettori di canale $\mathbf{h}{\text{BI}}$ e
-$\mathbf{h}{\text{IU}}$, si adotta un modello geometrico semplificato
+Per modellare i vettori di canale $\mathbf{h}_{\text{BI}}$ e
+$\mathbf{h}_{\text{IU}}$, si adotta un modello geometrico semplificato
 coerente con la propagazione indoor descritta nella Sezione 2.1 e con
 scenari sub-6 GHz non-sparsi in \cite{guo2021cascaded}. In
 particolare, ogni elemento di canale $h_{\text{BI},m}$ e
@@ -423,13 +428,14 @@ posizione utente $\mathbf{p}$ sui percorsi riflessi.
 
 La potenza ricevuta via IRS è quindi:
 \begin{equation}
-  P_r(\mathbf{p}, \boldsymbol{\theta}) = P_t \left| h_{\text{eff}}(\mathbf{p}, \boldsymbol{\theta}) \right|^2.
-  \label{eq:P_r}
+  P_r(\mathbf{p}, \boldsymbol{\theta}) = P_t \left|
+  h_{\text{eff}}(\mathbf{p}, \boldsymbol{\theta}) \right|^2.
+  \label{eq:Pr}
 \end{equation}
 
 \subsection{Problema di ottimizzazione}
 Il problema di ottimizzazione consiste nel determinare
-$\boldsymbol{\theta}^\star(\mathbf{p})$ che massimizza \eqref{eq:P_r}:
+$\boldsymbol{\theta}^\star(\mathbf{p})$ che massimizza \eqref{eq:Pr}:
 \begin{equation}
   \boldsymbol{\theta}^\star(\mathbf{p}) = \arg\max_{\boldsymbol{\theta}
   \in [0, 2\pi)^M} P_r(\mathbf{p}, \boldsymbol{\theta}),
@@ -458,6 +464,153 @@ i casi (con e senza link diretto) per valutare l'impatto dell'IRS in
 scenari di blocco completo (NLoS severo) e parziale.
 
 \chapter{Scenario di riferimento e modello di simulazione}
+\label{chap:scenario}
+
+In questo capitolo si descrive lo scenario di riferimento adottato
+per la simulazione di un ambiente indoor assistito da IRS, con
+particolare attenzione alla geometria del sistema, al modello di
+canale e alle assunzioni semplificative. Si formalizza inoltre il
+problema di controllo delle fasi IRS in un framework di reinforcement
+learning (RL), definendo stato, azione e reward in coerenza con il
+modello descritto nei capitoli precedenti. Le metriche di valutazione
+includono SNR, potenza ricevuta e coverage gain rispetto allo
+scenario senza IRS.
+
+\section{Descrizione dello scenario}
+Lo scenario considera un ambiente indoor di tipo ``office NLoS'' come
+definito in ITU-R P.1238, modellato come una stanza rettangolare di
+dimensioni 10 m $\times$ 8 m $\times$ 3 m. L'Access Point (AP) è
+posizionato in un angolo del soffitto al punto $(0, 0, 2.8)$ m,
+simulando un montaggio tipico per copertura in-building. L'IRS,
+composto da $N=64$ elementi (griglia $8 \times 8$), è montato su una
+parete laterale al punto $(9, 4, 1.5)$ m, orientato verso l'interno
+della stanza per massimizzare i percorsi riflessi verso l'utente.
+L'utente mobile (UE) si muove su un piano a quota $z=1$ m, con
+posizione $\mathbf{p} = (x, y, 1)$ che varia uniformemente nell'area
+$[1, 8] \times [1, 7]$ m, evitando regioni di copertura diretta forte.
+
+Questo layout cattura le sfide tipiche di copertura NLoS indoor, con
+ostacoli (pareti interne) che bloccano il link diretto AP-UE,
+rendendo l'IRS essenziale per il rerouting del segnale.
+
+\section{Modello di sistema}
+Il sistema considera uno scenario single-user, narrowband a frequenza
+$f = 3.5$ GHz (banda sub-6 GHz), coerente con le assunzioni di
+propagazione non-sparsa descritte nel \cref{chap:fondamenti}.
+
+Il modello di canale cascaded BS-IRS-UE segue la formulazione del
+Capitolo 2 (equazioni \ref{eq:heff}--\ref{eq:Pr}). Siano
+$\mathbf{h}_{\text{BI}} \in \mathbb{C}^{M}$ il vettore di canale
+BS-IRS e $\mathbf{h}_{\text{IU}}(\mathbf{p}) \in \mathbb{C}^{M}$ il
+vettore di canale IRS-UE dipendente dalla posizione utente
+$\mathbf{p}$. Il vettore di fase IRS è $\boldsymbol{\theta} =
+[\theta_1, \dots, \theta_M]^T$ con quantizzazione a $K=4$ livelli (2
+bit per elemento):
+\begin{equation}
+  \theta_m \in \left\{0, \frac{2\pi}{K}, \dots, \frac{2\pi(K-1)}{K}\right\}.
+\end{equation}
+
+La potenza ricevuta totale è espressa come:
+\begin{equation}
+  P_r(\mathbf{p}, \boldsymbol{\theta}) = P_t \left|
+  h_{\text{dir}}(\mathbf{p}) + \mathbf{h}_{\text{IU}}^H \,
+  \text{diag}(e^{j\boldsymbol{\theta}}) \, \mathbf{h}_{\text{BI}}
+  \right|^2,
+  \label{eq:Pr_sistema}
+\end{equation}
+dove il primo termine rappresenta il collegamento diretto attenuato
+(attenuazione di percorso secondo ITU-R P.1238, office NLoS).
+Il modello incorpora:
+\begin{itemize}
+  \item \textbf{Path loss:} calcolato mediante l'equazione \ref{eq:itu_loss}
+    in funzione delle distanze BS--elemento IRS e elemento IRS--UE;
+  \item \textbf{Shadow fading log-normale:} con deviazione standard
+    $\sigma = 4$ dB, rappresentativo di uffici indoor;
+  \item \textbf{Small-scale fading:} fase aleatoria uniforme in
+    $[0, 2\pi)$ per simulare fenomeni di multipath in regime narrowband.
+\end{itemize}
+
+Questa formulazione cattura l'effetto della posizione utente sulla
+configurazione ottimale delle fasi IRS e consente di valutare il
+guadagno di copertura rispetto allo scenario senza IRS.
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=0.9\textwidth]{img/model.png}
+  \caption{Layout dello scenario indoor con BS, IRS e posizioni utente.}
+  \label{fig:scenario}
+\end{figure}
+
+\section{Assunzioni semplificative}
+Per rendere il problema trattabile e isolare l'effetto del controllo
+di fase IRS, si adottano le seguenti assunzioni.
+
+Si assume che il canale sia quasi-statico, ossia costante all'interno
+di un frame di durata $T_f=10$ ms. Il controller IRS non dispone di
+CSI perfetta completa, ma utilizza la posizione UE $\mathbf{p}$
+stimata tramite localizzazione indoor con accuratezza media pari a
+0.5 m. Durante un frame la posizione dell'utente è considerata fissa;
+tra frame successivi $\mathbf{p}$ varia e genera i campioni del
+dataset (training/test). Si assume inoltre che l'IRS sia sempre
+attiva, con tutti gli elementi che operano con modulo unitario,
+$\beta_m=1,\ \forall m$, senza modalità off-state.
+
+L'overhead di controllo è trascurato, pertanto latenza e segnalazione
+sul collegamento BS--IRS (backhaul dedicato) non sono modellate
+esplicitamente. Per il rumore termico si assume $N_0=-174$ dBm/Hz e
+banda $B=20$ MHz, da cui
+\[
+  N = N_0 + 10\log_{10}(B) \approx -101\ \text{dBm},
+\]
+senza fattore di rumore addizionale.
+
+Queste assunzioni permettono di focalizzare l'analisi sul contributo
+del beamforming passivo IRS e sul confronto tra strategie di controllo.
+
+\section{Metriche di valutazione}
+Le prestazioni del sistema IRS sono valutate mediante tre metriche
+principali, calcolate sulla distribuzione spaziale delle posizioni
+utente $\mathbf{p}$. \cite{guo2021cascaded, wu2019irs}.
+
+\paragraph{Rapporto Segnale-Rumore (SNR).}
+Per una data posizione $\mathbf{p}$ e configurazione di fase
+$\boldsymbol{\theta}$, si considera:
+\begin{equation}
+  \gamma(\mathbf{p}, \boldsymbol{\theta}) =
+  \frac{P_r(\mathbf{p}, \boldsymbol{\theta})}{N_0 B},
+\end{equation}
+dove $N_0$ è la densità spettrale di rumore e $B$ la banda del
+sistema. Quando necessario, la metrica è riportata in dB come
+$10\log_{10}\gamma$.
+
+\paragraph{Potenza ricevuta.}
+Si analizza la potenza ricevuta
+\begin{equation}
+  P_r(\mathbf{p}, \boldsymbol{\theta}),
+\end{equation}
+sia in termini medi sia tramite funzione di distribuzione cumulativa
+(CDF) rispetto alle posizioni utente, per confrontare robustezza e
+variabilità delle diverse strategie di controllo IRS.
+
+\paragraph{Coverage gain.}
+Il guadagno di copertura rispetto al caso senza IRS è definito come:
+\begin{equation}
+  G_c(\mathbf{p}) = 10\log_{10}
+  \left(
+    \frac{P_r^{\mathrm{opt}}(\mathbf{p})}
+    {P_r^{\mathrm{noIRS}}(\mathbf{p})}
+  \right).
+\end{equation}
+In aggiunta, si considera la probabilità di copertura:
+\begin{equation}
+  P_{\mathrm{cov}} = \Pr\!\left(\gamma > 10\,\mathrm{dB}\right),
+\end{equation}
+ossia la frazione di area in cui il servizio rispetta una soglia SNR minima.
+
+Le simulazioni sono condotte con approccio Monte Carlo su $10^4$
+posizioni utente, generando dataset per addestramento e test dei
+modelli ML/RL e confrontando i risultati con baseline IRS casuale e
+IRS disattivata.
 
 \chapter{Formulazione del problema di controllo IRS}
 
