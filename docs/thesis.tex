@@ -377,6 +377,7 @@ multipath e blocco.
 
 \newpage
 \section{Modello di canale assistito da IRS}
+\label{sec:canaleIRS}
 In uno scenario assistito da IRS, il collegamento tra BS e UE è
 mediato dalla superficie riflettente. Supponendo che la BS trasmetta
 con potenza $P_t$ e che il canale presenti attenuazione di percorso
@@ -611,6 +612,32 @@ Le simulazioni sono condotte con approccio Monte Carlo su $10^4$
 posizioni utente, generando dataset per addestramento e test dei
 modelli ML/RL e confrontando i risultati con baseline IRS casuale e
 IRS disattivata.
+
+\subsection{Formulazione RL per controllo fasi IRS}
+
+Il problema di ottimizzazione delle fasi IRS (cfr. eq.~(2.5) nel
+Cap.~\ref{chap:fondamenti}) si formalizza come MDP per Reinforcement
+Learning (RL), con elementi definiti come segue.
+
+\textbf{Stato $s_t \in \mathcal{S}$}: La posizione stimata
+dell'utente $p_t = (x_t, y_t) \in [1,8] \times [1,7]$, normalizzata,
+che determina i canali $\mathbf{h}_{\mathrm{IU}}(p_t)$ e
+$\mathbf{h}_{\mathrm{direct}}(p_t)$ (cfr. Sez.~\ref{sec:canaleIRS}).
+
+\textbf{Azione $a_t \in \mathcal{A}$}: Il vettore di fasi quantizzate
+$\boldsymbol{\theta}_t = [\theta_{t,1}, \dots, \theta_{t,M}]^\top$,
+con $\theta_{t,m} \in \{0, \pi/2, \pi, 3\pi/2\}$ ($K=4$, eq.~(3.1));
+$|\mathcal{A}| = 4^{64}$ (ridotto via parametrizzazione ML).
+
+\textbf{Reward $r(s_t, a_t)$}: $r_t = P_r(p_t, \boldsymbol{\theta}_t)
+- P_{r,\mathrm{noIRS}}(p_t)$ (eqq.~(3.2),(3.4)), o normalizzato $r_t
+= 10\log_{10} \left( \frac{P_r(p_t,
+\boldsymbol{\theta}_t)}{P_{r,\mathrm{noIRS}}(p_t)} \right)$ per
+enfatizzare coverage gain (eq.~(3.5)).
+
+L'obiettivo è apprendere una policy $\pi: \mathcal{S} \to
+\mathcal{A}$ che massimizzi la reward cumulativa attesa in episodi di
+$T=1$ step (quasi-statico, $T_f=10$ ms).
 
 \chapter{Formulazione del problema di controllo IRS}
 
