@@ -45,9 +45,9 @@
     {\large{\bf Presentata da:\\ Alessandro Rebosio}}
   \end{minipage}
 
-  \vspace{10mm}
+  \vspace{9mm}
   \begin{center}
-    {\large{\bf Sessione ? \\}}
+    {\large{\bf Sessione di Laurea ?? \\}}
     {\large{\bf Anno Accademico 2025/2026\\}}
   \end{center}
 \end{titlepage}
@@ -98,25 +98,19 @@ mostra limitazioni crescenti, motivando un ripensamento radicale
 dell'ambiente di propagazione. Le Intelligent Reflecting Surfaces
 (IRS) emergono come una tecnologia promettente per riconfigurare in
 modo intelligente l'ambiente di propagazione mediante il controllo di
-elementi riflettenti passivi a basso costo. Un'IRS è una superficie
-planare costituita da un elevato numero di elementi metavariabili il
-cui comportamento elettromagnetico può essere controllato
-indipendentemente, consentendo di modificare ampiezza e fase del
-segnale incidente e realizzare un beamforming passivo tridimensionale
-a grana fine. Questo approccio introduce un nuovo grado di libertà
-nella gestione del canale radio, permettendo di migliorare copertura,
-efficienza spettrale ed energetica, e di mitigare fenomeni di fading
-e interferenza, il tutto con costi di implementazione ridotti
-rispetto alle soluzioni tradizionali.
+elementi riflettenti passivi a basso costo. Questo approccio
+introduce un nuovo grado di libertà nella gestione del canale radio,
+permettendo di migliorare copertura, efficienza spettrale ed
+energetica e di mitigare fading e interferenza con costi di
+implementazione contenuti rispetto alle soluzioni tradizionali.
 
 L'integrazione delle IRS in sistemi Massive MIMO e in scenari 5G e
 oltre-5G comporta tuttavia sfide tecniche significative e ancora
 largamente inesplorate. Queste includono la modellazione accurata del
-canale in presence di superfici riflettenti passive, la progettazione
-congiunta dei beamforming attivi (lato trasmettitore/ricevitore) e
-passivi (lato IRS), l'acquisizione affidabile della CSI negli scenari
-multiutente e dinamici, e la gestione
-della complessità computazionale intrinseca in tali sistemi ibridi.
+canale in presenza di superfici riflettenti passive, la progettazione
+congiunta dei beamforming attivi e passivi, l'acquisizione affidabile
+della CSI negli scenari multiutente e dinamici, e la gestione della
+complessità computazionale intrinseca in tali sistemi ibridi.
 La natura non convessa di molti problemi di ottimizzazione derivanti
 dalla struttura moltiplicativa dei canali assistiti da IRS, unita alla
 necessità di adattamento continuo a condizioni di propagazione
@@ -124,26 +118,18 @@ variabili, rende inadeguati gli approcci puramente analitici tradizionali.
 
 In questa prospettiva, le tecniche di Machine Learning rappresentano
 strumenti potenti e versatili per affrontare la complessità
-dimensionale e la non-linearità di reti assistite da IRS. Gli algoritmi di
-apprendimento automatico possono essere impiegati sia per la
-modellazione dei fenomeni di propagazione e la predizione della CSI,
-sia per l'ottimizzazione autonoma e adattiva dei coefficienti di
-riflessione delle IRS sulla base di indicatori di prestazione
-misurati, sia per il posizionamento intelligente delle superfici
-riflettenti in ambienti complessi.
+dimensionale e la non-linearità di reti assistite da IRS. In
+particolare, possono supportare l'ottimizzazione adattiva dei
+coefficienti di riflessione e, più in generale, il controllo della
+superficie sulla base di indicatori di prestazione osservati.
 
 L'obiettivo principale di questa tesi è proporre e valutare un
-framework comprensivo per l'analisi delle reti wireless assistite da
+quadro metodologico per l'analisi delle reti wireless assistite da
 IRS mediante tecniche di Machine Learning, con particolare attenzione
 alla modellazione del problema, agli algoritmi di apprendimento, e
-alla validazione mediante simulazioni. In specifico, il lavoro affronta
-l'ottimizzazione dinamica delle IRS in scenari Massive MIMO e mmWave.
-
-In sintesi, questa tesi combina analisi teorica, metodologie di
-Machine Learning e valutazioni sperimentali per proporre soluzioni
-concrete e riproducibili per l'ottimizzazione di reti wireless
-assistite da IRS, con l'intento di contribuire alla ricerca sulla
-tecnologia IRS e alle sue applicazioni in reti 5G e oltre.
+alla validazione mediante simulazioni. In particolare, il lavoro si
+concentra sul controllo dinamico delle IRS in scenari indoor,
+evidenziando modello, metriche e metodologia sperimentale.
 
 \setstretch{1}
 \tableofcontents
@@ -231,7 +217,7 @@ richiedere catene RF attive per ogni elemento
 \cite{wu2021irs,3gpp_tr38857}.
 
 Dal punto di vista del controllo, il nucleo del problema è la scelta
-dei coefficiente di riflessione per gli elementi IRS in modo da
+dei coefficienti di riflessione per gli elementi IRS in modo da
 massimizzare metriche quali potenza ricevuta, Rapporto
 Segnale-Rumore (Signal-to-Noise Ratio, SNR) o probabilità di
 copertura. La modellazione del canale in presenza di IRS introduce
@@ -252,7 +238,10 @@ fase degli elementi IRS che massimizza la copertura e la potenza
 ricevuta. L'obiettivo finale è quantificare il guadagno di copertura
 e la robustezza ottenibili grazie all'IRS rispetto a configurazioni
 senza IRS o non ottimizzate, analizzando prestazioni in scenari
-multiutente e con canali tipici di bande mmWave.
+multiutente e con canali tipici di bande mmWave. In sintesi, i
+contributi principali consistono nella definizione del modello di
+sistema, nella formulazione del problema di controllo e nella
+valutazione comparativa delle prestazioni.
 
 \chapter{Fondamenti teorici}
 \label{chap:fondamenti}
@@ -348,7 +337,8 @@ P_r(\mathbf{p})$ varia con la posizione utente $\mathbf{p}$.
 Il problema di ottimizzazione delle fasi IRS per massimizzare la
 potenza ricevuta $P_r(\mathbf{p})$ o metriche correlate (SNR,
 copertura) presenta sfide computazionali significative. La struttura
-moltiplicativa del canale assistito da IRS (discussa nella Sezione 2.3)
+moltiplicativa del canale assistito da IRS, discussa in
+\cref{sec:canaleIRS},
 introduce termini non-convessi che rendono inadeguati metodi di
 ottimizzazione locale classici, i quali possono convergere a minimi
 locali subottimali. Tecniche come l'ottimizzazione alternata o i
@@ -406,7 +396,6 @@ $\boldsymbol{\Gamma} = e^{j\boldsymbol{\theta}}$ con
 $\boldsymbol{\theta} = [\theta_1, \dots, \theta_M]^T$.
 
 \subsection{Modellazione dei canali}
-
 Per modellare i vettori di canale $\mathbf{h}_{\text{BI}}$ e
 $\mathbf{h}_{\text{IU}}$, si adotta un modello geometrico semplificato
 coerente con la propagazione indoor descritta nella Sezione 2.1 e con
@@ -501,7 +490,7 @@ $f = 3.5$ GHz (banda sub-6 GHz), coerente con le assunzioni di
 propagazione non-sparsa descritte nel \cref{chap:fondamenti}.
 
 Il modello di canale cascaded BS-IRS-UE segue la formulazione del
-Capitolo 2 (equazioni \ref{eq:heff}--\ref{eq:Pr}). Siano
+\cref{chap:fondamenti} (equazioni \eqref{eq:heff}--\eqref{eq:Pr}). Siano
 $\mathbf{h}_{\text{BI}} \in \mathbb{C}^{M}$ il vettore di canale
 BS-IRS e $\mathbf{h}_{\text{IU}}(\mathbf{p}) \in \mathbb{C}^{M}$ il
 vettore di canale IRS-UE dipendente dalla posizione utente
@@ -510,21 +499,16 @@ $\mathbf{p}$. Il vettore di fase IRS è $\boldsymbol{\theta} =
 bit per elemento):
 \begin{equation}
   \theta_m \in \left\{0, \frac{2\pi}{K}, \dots, \frac{2\pi(K-1)}{K}\right\}.
+  \label{eq:theta_quantized}
 \end{equation}
 
-La potenza ricevuta totale è espressa come:
-\begin{equation}
-  P_r(\mathbf{p}, \boldsymbol{\theta}) = P_t \left|
-  h_{\text{dir}}(\mathbf{p}) + \mathbf{h}_{\text{IU}}^H \,
-  \text{diag}(e^{j\boldsymbol{\theta}}) \, \mathbf{h}_{\text{BI}}
-  \right|^2,
-  \label{eq:Pr_sistema}
-\end{equation}
-dove il primo termine rappresenta il collegamento diretto attenuato
-(attenuazione di percorso secondo ITU-R P.1238, office NLoS).
+La potenza ricevuta totale segue quindi la formulazione generale
+\eqref{eq:P_r_tot}, dove nel presente scenario il primo termine
+rappresenta il collegamento diretto attenuato secondo ITU-R P.1238
+(office NLoS).
 Il modello incorpora:
 \begin{itemize}
-  \item \textbf{Path loss:} calcolato mediante l'equazione \ref{eq:itu_loss}
+  \item \textbf{Path loss:} calcolato mediante l'equazione \eqref{eq:itu_loss}
     in funzione delle distanze BS--elemento IRS e elemento IRS--UE;
   \item \textbf{Shadow fading log-normale:} con deviazione standard
     $\sigma = 4$ dB, rappresentativo di uffici indoor;
@@ -586,12 +570,12 @@ sistema. Quando necessario, la metrica è riportata in dB come
 $10\log_{10}\gamma$.
 
 \paragraph{Potenza ricevuta.}
-Si analizza la potenza ricevuta
+Si analizza la potenza ricevuta totale definita in \eqref{eq:P_r_tot},
+in termini medi e tramite funzione di distribuzione cumulativa (CDF)
 \begin{equation}
-  P_r(\mathbf{p}, \boldsymbol{\theta}),
+  F_{P_r}(x)=\Pr\!\left(P_r \le x\right),
 \end{equation}
-sia in termini medi sia tramite funzione di distribuzione cumulativa
-(CDF) rispetto alle posizioni utente, per confrontare robustezza e
+calcolata sulle posizioni utente, per confrontare robustezza e
 variabilità delle diverse strategie di controllo IRS.
 
 \paragraph{Coverage gain.}
@@ -602,6 +586,7 @@ Il guadagno di copertura rispetto al caso senza IRS è definito come:
     \frac{P_r^{\mathrm{opt}}(\mathbf{p})}
     {P_r^{\mathrm{noIRS}}(\mathbf{p})}
   \right).
+  \label{eq:coverage_gain}
 \end{equation}
 In aggiunta, si considera la probabilità di copertura:
 \begin{equation}
@@ -609,54 +594,50 @@ In aggiunta, si considera la probabilità di copertura:
 \end{equation}
 ossia la frazione di area in cui il servizio rispetta una soglia SNR minima.
 
-Le simulazioni sono condotte con approccio Monte Carlo su $10^4$
-posizioni utente, generando dataset per addestramento e test dei
-modelli ML/RL e confrontando i risultati con baseline IRS casuale e
-IRS disattivata.
-
+\newpage
 \subsection{Formulazione RL per il controllo delle fasi IRS}
 Il problema di ottimizzazione delle fasi IRS, definito in
-\eqref{eq:opt_problem} del Capitolo~\ref{chap:fondamenti}, si
+\eqref{eq:opt_problem} di \cref{chap:fondamenti}, si
 formalizza come un \emph{Markov Decision Process} (MDP) per
 Reinforcement Learning (RL) con i seguenti elementi:
 
-\textbf{Spazio degli stati} $\mathcal{S}$: La posizione discreizzata
+\paragraph{Spazio degli stati} $\mathcal{S}$: La posizione discreizzata
 dell'utente $\mathbf{p}_t = (x_t, y_t) \in \mathcal{G} \subset [1,8]
 \times [1,7]$, con $\mathcal{G}$ griglia di risoluzione $0.5$ m
 ($|\mathcal{G}| \approx 200$). Lo stato determina univocamente i
 canali $\mathbf{h}_{\mathrm{IU}}(\mathbf{p}_t)$ e
 $\mathbf{h}_{\mathrm{direct}}(\mathbf{p}_t)$ secondo il modello di
-Sez.~\ref{sec:canaleIRS}.
+\cref{sec:canaleIRS}.
 
-\textbf{Spazio delle azioni} $\mathcal{A}$: Il vettore di fasi
+\paragraph{Spazio delle azioni} $\mathcal{A}$: Il vettore di fasi
 quantizzate $\boldsymbol{\theta}_t = [\theta_{t,1}, \dots,
-\theta_{t,M}]^\top \in \mathcal{A}$, con
+\theta_{t,M}]^\top \in \mathcal{A}$, con ciascun elemento vincolato
+ai quattro livelli di fase definiti in \eqref{eq:theta_quantized};
 \[
-  \theta_{t,m} \in \left\{0, \frac{\pi}{2}, \pi,
-  \frac{3\pi}{2}\right\}, \quad m = 1,\dots,M, \quad |\mathcal{A}| =
-  K^M = 4^{64}.
+  |\mathcal{A}| = K^M = 4^{64}.
 \]
 La dimensionalità proibitiva dello spazio delle azioni motiva l'uso
 di politiche parametrizzate
 $\pi_{\boldsymbol{\phi}}(\boldsymbol{\theta}_t | s_t)$.
 
-\textbf{Funzione di reward} $r: \mathcal{S} \times \mathcal{A} \to \mathbb{R}$:
+\paragraph{Funzione di reward} $r: \mathcal{S} \times \mathcal{A} \to
+\mathbb{R}$:
 \begin{equation}
   r(s_t, a_t) = 10\log_{10} \left( \frac{P_r(\mathbf{p}_t,
   \boldsymbol{\theta}_t)}{P_{r,\mathrm{noIRS}}(\mathbf{p}_t)} \right)
   \quad [\text{dB}],
 \end{equation}
-dove $P_r(\cdot,\cdot)$ è definita in \eqref{eq:Pr_sistema} e
+dove $P_r(\cdot,\cdot)$ è definita in \eqref{eq:P_r_tot} e
 $P_{r,\mathrm{noIRS}}(\mathbf{p}_t) = P_t
 |\mathbf{h}_{\mathrm{direct}}(\mathbf{p}_t)|^2$ è la potenza senza
 IRS. Questa reward enfatizza direttamente il \emph{coverage gain}
-definito sopra.
+definito in \eqref{eq:coverage_gain}.
 
-\textbf{Dinamica di transizione} $P(s_{t+1} | s_t, a_t)$:
+\paragraph{Dinamica di transizione} $P(s_{t+1} | s_t, a_t)$:
 $\mathbf{p}_{t+1} \sim \mathcal{U}(\mathcal{G})$ (uniforme, i.i.d.),
 coerente con il modello quasi-statico ($T_f=10$ ms).
 
-\textbf{Policy} $\pi_{\boldsymbol{\phi}}: \mathcal{S} \to
+\paragraph{Policy} $\pi_{\boldsymbol{\phi}}: \mathcal{S} \to
 \Delta^{|\mathcal{A}|-1}$: La politica parametrizzata da
 $\boldsymbol{\phi}$ da apprendere risolve
 \begin{equation}
@@ -670,10 +651,10 @@ con episodi di $T=1$ step (problema statico, non-sequenziale).
 \chapter{Formulazione del problema di controllo IRS}
 \label{chap:controlloIRS}
 
-In questo capitolo si formalizza il problema di controllo delle fasi
+Questo capitolo formalizza il problema di controllo delle fasi
 dell'IRS in termini di mappatura ingresso--uscita appresa da un
 modello di Machine Learning, in coerenza con lo scenario e il modello
-di simulazione descritti nel Capitolo~\ref{chap:scenario}.
+di simulazione descritti in \cref{chap:scenario}.
 L'obiettivo è approssimare, con un modello data-driven, la
 configurazione di fase che massimizza le metriche di copertura
 (potenza ricevuta, SNR, coverage gain) per ciascuna posizione utente
@@ -681,11 +662,11 @@ o stato del canale \cite{guo2021cascaded,wu2019irs}.
 
 \section{Formulazione del problema di controllo}
 Richiamando il modello di canale assistito da IRS introdotto nel
-Capitolo~\ref{chap:fondamenti}, indichiamo con $\boldsymbol{\theta} =
+\cref{chap:fondamenti}, indichiamo con $\boldsymbol{\theta} =
 [\theta_1,\dots,\theta_M]^T$ il vettore delle fasi applicate dai $M$
 elementi IRS e con $P_r(\mathbf{p}, \boldsymbol{\theta})$ la potenza
 ricevuta totale dall'utente in posizione $\mathbf{p}$, definita in
-\eqref{eq:Pr_sistema}.
+\eqref{eq:P_r_tot}.
 
 Il problema di controllo può essere espresso, in forma statica, come
 la ricerca di una mappatura
@@ -704,26 +685,21 @@ $U(\cdot)$ legata alle prestazioni del sistema:
   \label{eq:problema_controllo}
 \end{equation}
 soggetto ai vincoli hardware sulla fase IRS introdotti in
-Sezione~\ref{sec:principioIRS} (fase quantizzata, numero finito di
+\cref{sec:principioIRS} (fase quantizzata, numero finito di
 elementi). Nelle sezioni seguenti si specificano gli spazi di
 ingresso $\mathcal{X}$, di uscita $\mathcal{\Theta}$ e i vincoli
 pratici da rispettare.
 
 \section{Ingresso al sistema di Machine Learning}
 \label{sec:inputML}
-
 Nel contesto di questa tesi si considerano due possibili scelte per il
 vettore di ingresso $\mathbf{x}$ al modello di Machine Learning:
-\begin{enumerate}
-  \item \textbf{Posizione utente} $\mathbf{p}$;
-  \item \textbf{CSI semplificato} del collegamento BS--IRS--UE.
-\end{enumerate}
 
 \subsection{Posizione utente}
 Nel primo caso, l'ingresso è dato direttamente dalla posizione utente
 stimata, $\mathbf{x} = \mathbf{p} = [x, y]^T$, ottenuta tramite
 localizzazione indoor con accuratezza media pari a $0.5$~m, come
-assunto nel Capitolo~\ref{chap:scenario}. Il modello ML apprende
+assunto in \cref{chap:scenario}. Il modello ML apprende
 quindi la mappatura
 \[
   f_{\boldsymbol{\phi}} : \mathbf{p} \mapsto \boldsymbol{\theta},
@@ -780,49 +756,47 @@ quantizzati ammessi dall'hardware.
 
 \newpage
 \section{Vincoli pratici}
-
 La mappatura $f_{\boldsymbol{\phi}}$ deve rispettare vincoli pratici
 imposti dalla tecnologia IRS \cite{wu2019irs,3gpp_tr38857}:
 
-\begin{itemize}
-  \item \textbf{Fase discreta:} Ogni elemento IRS può assumere solo
-    $K=4$ livelli di fase equispaziati (risoluzione $2$ bit/elemento):
-    \[
-      \theta_m \in
-      \left\{0,\ \frac{\pi}{2},\ \pi,\ \frac{3\pi}{2}\right\}, \quad
-      m = 1,\dots,M.
-    \]
-    Questa quantizzazione discreta ($\Delta\theta = 90^\circ$)
-    introduce una perdita di $\sim2-3$ dB rispetto alle fasi
-    continue, ma semplifica significativamente l'hardware riducendo a
-    $1-2$ diodi PIN per elemento rispetto ai $4+$ necessari per
-    $K=16$ \cite{wu2021irs}.
+\paragraph{Fase discreta:} Ciascun elemento IRS può assumere solo
+$K=4$ livelli di fase equispaziati, come definito in
+\eqref{eq:theta_quantized} (risoluzione di $2$ bit/elemento). La
+quantizzazione discreta ($\Delta\theta = 90^\circ$) comporta una
+perdita di circa $2$--$3$ dB rispetto al caso a fase continua, ma
+riduce la complessità hardware: tipicamente sono sufficienti $1$--$2$
+diodi PIN per elemento, contro i $4+$ richiesti da configurazioni con
+$K=16$ \cite{wu2021irs}.
 
-  \item \textbf{Numero finito di elementi:} $M=32$ o $M=64$ elementi
-    (griglia $8\times8$), limitato da dimensioni fisiche
-    ($\sim0.5\times0.5$ m a $3.5$ GHz), mutual coupling ($\sim-15$
-    dB) e capacità di controllo del backhaul ($\sim10^3$ bit/frame).
-    Il guadagno di beamforming passivo scala quadraticamente con $M$
-    ($G_\text{passivo}\propto M^2$), ma ogni raddoppio di $M$ aumenta
-    esponenzialmente la dimensione dello spazio delle azioni ($K^M$)
-    \cite{wu2019irs}.
+\paragraph{Numero finito di elementi:} Si considerano configurazioni
+con $M=32$ o $M=64$ elementi (griglia $8\times8$), compatibili con i
+vincoli di implementazione: ingombro fisico (circa $0.5\times0.5$ m a
+$3.5$ GHz), mutual coupling (circa $-15$ dB) e capacità di controllo
+del backhaul (circa $10^3$ bit/frame). Il guadagno di beamforming
+passivo cresce quadraticamente con $M$ ($G_\text{passivo}\propto M^2$),
+mentre la cardinalità dello spazio delle azioni cresce in modo
+esponenziale ($K^M$) \cite{wu2019irs}.
 
-  \item \textbf{Modulo di riflessione unitario:} Si assume
-    $\beta_m=1,\ \forall m$ (nessuna perdita di inserzione),
-    realistico per IRS state-of-the-art ($\beta_m>0.9$) ma
-    ottimistico rispetto a prototipi ($\beta_m=0.7-0.85$). Perdite
-    reali riducono il coverage gain di $\sim1-2$ dB \cite{3gpp_tr38857}.
+\paragraph{Modulo di riflessione unitario:} Si assume
+$\beta_m=1,\ \forall m$ (assenza di perdite di inserzione). Tale
+ipotesi è plausibile per dispositivi IRS avanzati ($\beta_m>0.9$), ma
+rimane ottimistica rispetto a molti prototipi
+($\beta_m=0.7$--$0.85$). In presenza di perdite realistiche, il
+coverage gain si riduce tipicamente di circa $1$--$2$ dB
+\cite{3gpp_tr38857}.
 
-  \item \textbf{Latenza di riconfigurazione:} Cambio di fase $<$1
-    ms/elemento (tempo di switch diodi PIN), ma coordinamento totale
-    IRS richiede $T_\text{config}\sim5-10$ ms per $M=64$, limitando
-    l'adattamento dinamico in scenari ad alta mobilità \cite{wu2021irs}.
-\end{itemize}
+\paragraph{Latenza di riconfigurazione:} Il tempo di commutazione
+della fase può essere inferiore a $1$ ms per elemento (switch dei
+diodi PIN), ma la riconfigurazione complessiva della superficie
+richiede in media $T_\text{config}\sim5$--$10$ ms per $M=64$.
+Questo limite riduce la capacità di adattamento in scenari ad alta
+mobilità \cite{wu2021irs}.
 
+\vspace{\baselineskip}
 Questi vincoli definiscono lo spazio delle soluzioni praticabili e
 guidano la progettazione degli algoritmi ML, imponendo tecniche di
-quantizzazione post-regressione o classificazione multi-classe
-diretta sui $K$ livelli discreti.
+quantizzazione post-regressione oppure approcci di classificazione
+multiclasse direttamente sui $K$ livelli discreti.
 
 \chapter{Algoritmi di Machine Learning considerati}
 
