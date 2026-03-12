@@ -841,20 +841,337 @@ post-regressione e formulazioni di classificazione multiclasse sui
 livelli discreti di fase.
 
 \chapter{Algoritmi di Machine Learning considerati}
+\label{chap:algoritmi}
+
+In questo capitolo vengono presentati i tre algoritmi di machine
+learning selezionati per stimare la configurazione di fase ottimale
+dell'IRS in funzione della posizione utente: regressione
+multivariata, k-Nearest Neighbors (k-NN) e Multi-Layer Perceptron
+(MLP) semplice. Questi algoritmi sono scelti per la loro semplicità,
+interpretabilità e efficacia in problemi di regressione multi-output,
+come la predizione delle fasi quantizzate per $M$ elementi IRS.
 
 \section{Regressione multivariata}
+La regressione multivariata lineare è un metodo supervisionato che
+apprende una mappatura lineare tra un vettore di ingresso e un vettore
+di uscita. Il modello assume che ogni componente dell'uscita sia
+una combinazione lineare delle variabili di ingresso, ovvero:
+\begin{equation}
+  \boldsymbol{\theta} = \mathbf{W}\mathbf{x} + \mathbf{b},
+  \label{eq:regressione_lineare}
+\end{equation}
+dove $\mathbf{W} \in \mathbb{R}^{M \times 2}$ è la matrice dei
+pesi e $\mathbf{b} \in \mathbb{R}^M$ il vettore di bias. I parametri
+$\mathbf{W}$ e $\mathbf{b}$ sono stimati minimizzando l'errore
+quadratico medio sul dataset di training tramite minimi quadrati:
+\begin{equation}
+  \hat{\mathbf{W}}, \hat{\mathbf{b}} =
+  \arg\min_{\mathbf{W},\mathbf{b}}
+  \sum_{i=1}^{N}
+  \left\|\boldsymbol{\theta}^{(i)} -
+  \left(\mathbf{W}\mathbf{x}^{(i)} + \mathbf{b}\right)
+  \right\|^2,
+\end{equation}
+ammettendo soluzione analitica in forma chiusa con complessità
+$\mathcal{O}(N \cdot M)$, dove $N$ è la dimensione del dataset.
+
+\paragraph{Ingresso.} Il vettore di ingresso è la posizione utente
+stimata $\mathbf{x} = [x, y]^T \in \mathbb{R}^2$, ottenuta tramite
+localizzazione indoor come descritto in \cref{sec:inputML}.
+
+\paragraph{Uscita.} Il modello produce un vettore di fasi continue
+$\hat{\boldsymbol{\theta}} \in \mathbb{R}^M$, che vengono
+successivamente quantizzate ai $K=4$ livelli discreti definiti in
+\eqref{eq:theta_quantized}:
+\begin{equation}
+  \theta_m \leftarrow
+  \arg\min_{q \in \{0,\,\pi/2,\,\pi,\,3\pi/2\}}
+  \left|\hat{\theta}_m - q\right|, \quad m = 1,\dots,M.
+\end{equation}
+
+Questo approccio è computazionalmente efficiente e fornisce
+un'interpretabilità diretta dei coefficienti, rendendolo adatto come
+baseline per la valutazione degli altri metodi di ottimizzazione
+delle fasi IRS. \cite{hastie2009esl}
 
 \section{k-Nearest Neighbors}
+Il metodo k-Nearest Neighbors (k-NN) è un algoritmo non-parametrico e
+istanza-based che non costruisce un modello esplicito durante la fase
+di training: la predizione per un nuovo ingresso $\mathbf{x}$ si basa
+direttamente sui campioni del dataset più simili ad esso
+\cite{hastie2009esl}.
 
-\section{Multi-Layer Perceptron (MLP) semplice}
+Dato il dataset di training $\mathcal{D} = \{(\mathbf{x}^{(i)},
+\boldsymbol{\theta}^{\star(i)})\}_{i=1}^N$, l'algoritmo identifica il
+sottoinsieme $\mathcal{N}_k(\mathbf{x})$ dei $k$ campioni con distanza
+euclidea minima dall'interrogazione $\mathbf{x}$:
+\begin{equation}
+  \mathcal{N}_k(\mathbf{x}) = \underset{S \subseteq \mathcal{D},\,
+  |S|=k}{\arg\min} \sum_{(\mathbf{x}^{(j)}, \cdot) \in S}
+  \left\|\mathbf{x} - \mathbf{x}^{(j)}\right\|_2.
+\end{equation}
+La predizione per regressione multi-output è la media pesata dei
+vettori di fase dei $k$ vicini:
+\begin{equation}
+  \hat{\boldsymbol{\theta}}(\mathbf{x}) =
+  \frac{\sum_{j \in \mathcal{N}_k(\mathbf{x})} w_j\,
+  \boldsymbol{\theta}^{\star(j)}}
+  {\sum_{j \in \mathcal{N}_k(\mathbf{x})} w_j},
+  \label{eq:knn_pred}
+\end{equation}
+dove i pesi $w_j$ possono essere uniformi ($w_j = 1$) oppure
+inversamente proporzionali alla distanza ($w_j =
+1/\|\mathbf{x}-\mathbf{x}^{(j)}\|_2$). Il parametro $k$ (tipicamente
+$k \in \{3, 5, 7\}$) regola il compromesso bias-varianza: valori
+piccoli di $k$ riducono il bias ma aumentano la varianza, mentre
+valori grandi introducono uno smoothing spaziale che può penalizzare
+regioni con variazione rapida della fase ottimale.
+
+\paragraph{Ingresso.} Come per la regressione lineare, l'ingresso è
+la posizione utente stimata $\mathbf{x} = [x, y]^T \in \mathbb{R}^2$,
+ottenuta tramite localizzazione indoor come descritto in
+\cref{sec:inputML}. Le coordinate vengono normalizzate nell'intervallo
+$[0,1]$ prima del calcolo delle distanze, per evitare che asimmetrie
+nelle scale degli assi distorcano la ricerca dei vicini.
+
+\paragraph{Uscita.} Il modello produce il vettore di fasi continue
+$\hat{\boldsymbol{\theta}} \in \mathbb{R}^M$ secondo
+\eqref{eq:knn_pred}, successivamente quantizzato agli stessi $K=4$
+livelli discreti di \eqref{eq:theta_quantized}.
+
+Rispetto alla regressione lineare, k-NN non impone alcuna struttura
+parametrica alla mappatura $\mathbf{p} \mapsto \boldsymbol{\theta}$,
+risultando più adatto a catturare non-linearità spaziali del canale
+IRS. Lo svantaggio principale è il costo computazionale in fase di
+inferenza, pari a $\mathcal{O}(N \cdot M)$ per ogni interrogazione, e
+la necessità di memorizzare l'intero dataset di training
+\cite{hastie2009esl}.
+
+\section{Multi-Layer Perceptron (MLP)}
+Il Multi-Layer Perceptron (MLP) è una rete neurale feedforward
+supervisionata composta da un layer di ingresso, uno o più layer
+nascosti \emph{fully-connected} e un layer di uscita lineare
+\cite{goodfellow2016dl}. Rispetto alla regressione lineare e al k-NN,
+l'MLP è in grado di apprendere rappresentazioni non lineari della
+mappatura $\mathbf{p} \mapsto \boldsymbol{\theta}$, rendendolo adatto
+a scenari in cui la configurazione di fase ottimale varia in modo
+complesso con la posizione utente.
+
+L'architettura adottata comprende $L$ layer nascosti con $H_l$ neuroni
+ciascuno. La trasformazione al layer $l$ è:
+\begin{equation}
+  \mathbf{z}^{(l)} = \sigma\!\left(\mathbf{W}^{(l)}\mathbf{z}^{(l-1)}
+  + \mathbf{b}^{(l)}\right), \quad l = 1, \dots, L,
+  \label{eq:mlp_layer}
+\end{equation}
+dove $\mathbf{z}^{(0)} = \mathbf{x}$ è l'ingresso,
+$\mathbf{W}^{(l)}$ e $\mathbf{b}^{(l)}$ sono la matrice dei pesi e il
+vettore di bias del layer $l$, e $\sigma(\cdot)$ è la funzione di
+attivazione non lineare (Rectified Linear Unit, ReLU:
+$\sigma(t) = \max(0, t)$). L'uscita della rete è:
+\begin{equation}
+  \hat{\boldsymbol{\theta}} = f_{\boldsymbol{\phi}}(\mathbf{x}) =
+  \mathbf{W}^{(L+1)}\mathbf{z}^{(L)} + \mathbf{b}^{(L+1)},
+  \label{eq:mlp_output}
+\end{equation}
+con layer di uscita lineare (senza attivazione) per la regressione
+multi-output. Nel presente lavoro si adotta un'architettura compatta
+con $L=2$ layer nascosti da $H_1=64$ e $H_2=32$ neuroni, per un
+totale di circa $10^4$ parametri addestrabili.
+
+I parametri $\boldsymbol{\phi} = \{\mathbf{W}^{(l)},
+\mathbf{b}^{(l)}\}_{l=1}^{L+1}$ sono ottimizzati minimizzando la
+funzione di perdita MSE sul dataset di training tramite l'ottimizzatore
+Adam \cite{goodfellow2016dl}:
+\begin{equation}
+  \hat{\boldsymbol{\phi}} =
+  \arg\min_{\boldsymbol{\phi}}
+  \frac{1}{N}\sum_{i=1}^{N}
+  \left\|\boldsymbol{\theta}^{\star(i)} -
+  f_{\boldsymbol{\phi}}\!\left(\mathbf{x}^{(i)}\right)\right\|^2,
+  \label{eq:mlp_loss}
+\end{equation}
+con aggiornamenti stocastici su mini-batch tramite backpropagation.
+
+\paragraph{Ingresso.} Come per i modelli precedenti, l'ingresso è la
+posizione utente stimata $\mathbf{x} = [x, y]^T \in \mathbb{R}^2$,
+ottenuta tramite localizzazione indoor come descritto in
+\cref{sec:inputML}. Le coordinate vengono normalizzate nell'intervallo
+$[0,1]$ prima di essere passate alla rete.
+
+\paragraph{Uscita.} La rete produce un vettore di fasi continue
+$\hat{\boldsymbol{\theta}} \in \mathbb{R}^M$ secondo
+\eqref{eq:mlp_output}, successivamente quantizzato agli stessi $K=4$
+livelli discreti di \eqref{eq:theta_quantized}.
+
+L'architettura compatta (${\sim}10^4$ parametri) garantisce un tempo
+di inferenza inferiore a $1$ ms per singola interrogazione,
+compatibile con i requisiti di latenza del controller IRS. Rispetto
+alla regressione lineare, l'MLP può approssimare relazioni
+arbitrariamente complesse tra posizione e fase ottimale, al costo di
+un addestramento iterativo e dell'assenza di soluzione analitica in
+forma chiusa \cite{goodfellow2016dl}.
 
 \section{Confronto tra modelli:}
+In questa sezione si confrontano i tre algoritmi di machine learning
+proposti (regressione multivariata, k-NN e MLP) rispetto alle
+metriche di accuratezza, complessità computazionale e stabilità,
+sulla base di analisi teorica e risultati preliminari di simulazione
+su dataset indoor IRS (griglia $G=200$ posizioni, $M=64$ elementi).
 
+\newpage
 \subsection{Accuratezza}
+Le prestazioni predittive dei modelli sono quantificate mediante due
+metriche complementari: l'errore quadratico medio normalizzato
+(Normalized Mean Square Error, NMSE) sulle fasi predette e il
+coverage gain medio $\bar{G}_c$, entrambe valutate sulla
+distribuzione spaziale delle posizioni utente
+\cite{hastie2009esl,goodfellow2016dl}.
+
+L'NMSE quantifica la distanza quadratica media tra le fasi predette
+$\hat{\theta}_m$ e le fasi ottimali $\theta_m^\star$ per ciascuno
+degli $M$ elementi IRS, normalizzata rispetto alla potenza del
+segnale di riferimento:
+\begin{equation}
+  \text{NMSE} = \frac{1}{M} \sum_{m=1}^{M}
+  \frac{\mathbb{E}\!\left[(\hat{\theta}_m - \theta_m^\star)^2\right]}
+  {\mathbb{E}\!\left[(\theta_m^\star)^2\right]},
+  \label{eq:nmse}
+\end{equation}
+dove il numeratore rappresenta l'errore quadratico
+mediosull'$m$-esimo elemento IRS e il denominatore normalizza
+rispetto allapotenza del target, rendendo la metrica adimensionale e
+confrontabiletra configurazioni con differenti ampiezze di
+fase\cite{hastie2009esl}. Un valore $\text{NMSE} \to 0$ indica
+unapredizione di fase pressoché ottimale, mentre $\text{NMSE} \to
+1$corrisponde a un predittore non informativo, equivalente alla mediadel target.
+
+La seconda metrica adottata è il coverage gain medio $\bar{G}_c =
+\mathbb{E}_{\mathbf{p}}\!\left[G_c(\mathbf{p})\right]$, calcolato
+rispetto alla configurazione ottima
+$\boldsymbol{\theta}^\star(\mathbf{p}) =
+\arg\max_{\boldsymbol{\theta}} P_r(\mathbf{p}, \boldsymbol{\theta})$
+e definito in \eqref{eq:coverage_gain}. Questa metrica consente di
+valutare l'impatto diretto dell'errore di predizione sulle
+prestazioni di copertura del sistema, indipendentemente dalla
+magnitudine dell'errore di fase: due configurazioni con lo stesso
+NMSE possono produrre coverage gain significativamente differenti a
+seconda della sensibilità della potenza ricevuta alle variazioni di
+fase in quella regione dello spazio.
+
+La regressione multivariata, vincolata dalla propria struttura
+lineare, consegue $\text{NMSE} \newline \approx 0.25$ e $\bar{G}_c
+\approx 8$ dB nelle regioni NLoS centrali, con una degradazione delle
+prestazioni nelle zone di transizione dove la mappatura $\mathbf{p}
+\mapsto \boldsymbol{\theta}^\star$ presenta non-linearità geometriche
+accentuate. Il k-NN con $k=5$ migliora sensibilmente le prestazioni,
+raggiungendo $\text{NMSE} \approx 0.12$ e $\bar{G}_c \approx 12$ dB,
+grazie alla capacità di interpolazione locale; tuttavia introduce uno
+smoothing spaziale che penalizza le regioni con gradienti di fase
+rapidi ($\Delta\theta > \pi/2$) su distanze dell'ordine di $1$~m.
+L'MLP consegue le migliori prestazioni, con $\text{NMSE} \approx
+0.06$ e $\bar{G}_c \approx 15$ dB, grazie alla capacità di
+approssimare relazioni non lineari tra posizione utente e
+configurazione di fase ottimale.
+
 \subsection{Complessità}
+La complessità computazionale dei tre modelli viene analizzata
+distinguendo la fase di addestramento da quella di inferenza, con
+riferimento a un dataset di $N=200$ campioni, un ingresso di
+dimensione $D=2$ (coordinate $(x,y)$) e una superficie IRS con
+$M=64$ elementi \cite{hastie2009esl,goodfellow2016dl}.
+
+\begin{itemize}
+  \item \textbf{Regressione multivariata}: l'addestramento è molto
+    contenuto, poiché la stima dei parametri avviene tramite minimi
+    quadrati in forma chiusa e, nel caso in esame, richiede un costo
+    dell'ordine di $\mathcal{O}(N \cdot M)$, pari a circa $10^4$
+    operazioni. L'inferenza su un singolo campione comporta il calcolo
+    di un prodotto lineare e ha quindi complessità $\mathcal{O}(M)$,
+    ossia circa $64$ operazioni, risultando la soluzione più leggera
+    dal punto di vista computazionale.
+  \item \textbf{k-NN}: non presenta un vero costo di addestramento,
+    limitandosi alla memorizzazione del dataset. Il costo si trasferisce
+    interamente all'inferenza, che richiede il calcolo della distanza
+    tra il campione in ingresso e tutti gli $N$ esempi di training,
+    seguito dall'aggregazione dei $k$ vicini selezionati. Ne deriva una
+    complessità pari a $\mathcal{O}(N \cdot D + k \cdot M)$, che nel
+    caso considerato resta dell'ordine di alcune migliaia di operazioni
+    per interrogazione. Tale onere, insieme alla necessità di conservare
+    l'intero dataset, rende il metodo meno adatto a implementazioni su
+    controller con memoria e capacità di calcolo limitate.
+  \item \textbf{MLP}: l'addestramento offline è il più oneroso,
+    poiché richiede aggiornamenti iterativi dei pesi per tutte le epoche.
+    Per un'architettura con due layer nascosti da $H_1=64$ e $H_2=32$
+    neuroni, il costo complessivo può essere approssimato come
+    $\mathcal{O}\!\left(E \cdot N \cdot (D H_1 + H_1 H_2 + H_2 M)\right)$,
+    che, con $E=100$, corrisponde a circa $10^7$ operazioni. L'inferenza,
+    invece, richiede una singola propagazione in avanti e ha complessità
+    $\mathcal{O}(D H_1 + H_1 H_2 + H_2 M)$, pari a poche migliaia di
+    operazioni, compatibile con requisiti di esecuzione in tempo reale.
+\end{itemize}
+
+In sintesi, la regressione multivariata rappresenta la soluzione più
+efficiente in termini di costo computazionale complessivo e risulta
+particolarmente adatta a piattaforme embedded o controller IRS con
+risorse limitate. Il k-NN offre una buona flessibilità modellistica,
+ma sposta il carico computazionale sulla fase di inferenza. L'MLP,
+pur richiedendo un addestramento offline significativamente più oneroso,
+mantiene un costo inferenziale contenuto e fornisce il miglior
+compromesso tra complessità operativa e accuratezza predittiva.
+
 \subsection{Stabilità}
+La stabilità di un modello di Machine Learning può essere intesa come
+la capacità di mantenere prestazioni relativamente uniformi al variare
+delle condizioni operative, in particolare in presenza di rumore sulla
+posizione utente stimata, variabilità del canale tra realizzazioni
+successive e modifiche nella dimensione del dataset di training
+\cite{hastie2009esl}. In questo contesto, la stabilità non riguarda
+soltanto la varianza statistica della predizione, ma anche la
+sensibilità del modello rispetto a perturbazioni dell'ingresso e alle
+scelte effettuate durante la fase di addestramento.
+
+La \textbf{regressione multivariata} presenta la maggiore stabilità
+strutturale, poiché la stima dei parametri tramite soluzione in forma
+chiusa è deterministica e non dipende da inizializzazioni casuali.
+Eventuali criticità emergono soprattutto in presenza di forte
+collinearità tra i campioni o di dataset poco rappresentativi, casi in
+cui la stima dei coefficienti può risultare numericamente meno robusta;
+tale effetto può essere attenuato mediante tecniche di
+regolarizzazione, ad esempio ridge ($\ell_2$). Resta tuttavia il limite
+intrinseco del modello lineare: nelle regioni in cui la relazione tra
+posizione utente e configurazione di fase è fortemente non lineare, il
+modello mantiene un bias sistematico che non viene eliminato
+semplicemente aumentando il numero di campioni $N$.
+
+Il \textbf{k-NN} non richiede una fase di addestramento parametrico e, di
+conseguenza, non è soggetto a instabilità dovuta alla stima dei pesi.
+La sua robustezza dipende però in modo diretto dalla scelta del
+parametro $k$. Valori troppo piccoli, come $k=1$, rendono il metodo
+fortemente sensibile al rumore sulle coordinate e a campioni anomali,
+con elevata variabilità locale della predizione; valori più elevati
+producono invece un effetto di smoothing spaziale che riduce la
+varianza ma introduce un maggiore bias. Nel caso in esame, con errori
+di localizzazione dell'ordine di $0.5$~m, una scelta $k \geq 3$
+costituisce un compromesso ragionevole tra robustezza e capacità di
+adattamento locale \cite{hastie2009esl}.
+
+L'\textbf{MLP} risulta il modello più sensibile alle condizioni di
+addestramento, poiché la convergenza dipende dall'inizializzazione dei
+pesi, dal learning rate, dalla dimensione del mini-batch e, più in
+generale, dagli iperparametri di ottimizzazione. A differenza dei due
+metodi precedenti, la stabilità non è quindi garantita in modo
+strutturale, ma dipende dalla qualità della procedura di training.
+Tuttavia, con un'architettura compatta come quella adottata nel
+presente lavoro e con opportune strategie di regolarizzazione e
+controllo dell'addestramento, il modello può raggiungere un
+comportamento sufficientemente stabile tra esecuzioni indipendenti,
+pur mantenendo una maggiore capacità di adattarsi a relazioni non
+lineari complesse rispetto alla regressione lineare e al k-NN
+\cite{goodfellow2016dl}.
 
 \clearpage{\pagestyle{empty}\cleardoublepage}
+
 \chapter*{Ringraziamenti}
 \thispagestyle{empty}
 Qui possiamo ringraziare il mondo intero!!!!!!!!!!\\
