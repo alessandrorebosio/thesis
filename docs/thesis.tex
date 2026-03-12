@@ -47,7 +47,7 @@
 
   \vspace{9mm}
   \begin{center}
-    {\large{\bf Sessione di Laurea ?? \\}}
+    {\large{\bf Sessione di Laurea I \\}}
     {\large{\bf Anno Accademico 2025/2026\\}}
   \end{center}
 \end{titlepage}
@@ -759,7 +759,8 @@ quantizzati ammessi dall'hardware.
 La mappatura $f_{\boldsymbol{\phi}}$ deve rispettare vincoli pratici
 imposti dalla tecnologia IRS \cite{wu2019irs,3gpp_tr38857}:
 
-\paragraph{Fase discreta:} Ciascun elemento IRS può assumere solo
+\subsection{Quantizzazione discreta della fase}
+Ciascun elemento IRS può assumere solo
 $K=4$ livelli di fase equispaziati, come definito in
 \eqref{eq:theta_quantized} (risoluzione di $2$ bit/elemento). La
 quantizzazione discreta ($\Delta\theta = 90^\circ$) comporta una
@@ -768,7 +769,8 @@ riduce la complessità hardware: tipicamente sono sufficienti $1$--$2$
 diodi PIN per elemento, contro i $4+$ richiesti da configurazioni con
 $K=16$ \cite{wu2021irs}.
 
-\paragraph{Numero finito di elementi:} Si considerano configurazioni
+\subsection{Numero di elementi e complessità}
+Si considerano configurazioni
 con $M=32$ o $M=64$ elementi (griglia $8\times8$), compatibili con i
 vincoli di implementazione: ingombro fisico (circa $0.5\times0.5$ m a
 $3.5$ GHz), mutual coupling (circa $-15$ dB) e capacità di controllo
@@ -777,7 +779,8 @@ passivo cresce quadraticamente con $M$ ($G_\text{passivo}\propto M^2$),
 mentre la cardinalità dello spazio delle azioni cresce in modo
 esponenziale ($K^M$) \cite{wu2019irs}.
 
-\paragraph{Modulo di riflessione unitario:} Si assume
+\subsection{Modulo di riflessione unitario}
+Si assume
 $\beta_m=1,\ \forall m$ (assenza di perdite di inserzione). Tale
 ipotesi è plausibile per dispositivi IRS avanzati ($\beta_m>0.9$), ma
 rimane ottimistica rispetto a molti prototipi
@@ -785,20 +788,71 @@ rimane ottimistica rispetto a molti prototipi
 coverage gain si riduce tipicamente di circa $1$--$2$ dB
 \cite{3gpp_tr38857}.
 
-\paragraph{Latenza di riconfigurazione:} Il tempo di commutazione
+\subsection{Latenza di riconfigurazione}
+Il tempo di commutazione
 della fase può essere inferiore a $1$ ms per elemento (switch dei
 diodi PIN), ma la riconfigurazione complessiva della superficie
 richiede in media $T_\text{config}\sim5$--$10$ ms per $M=64$.
 Questo limite riduce la capacità di adattamento in scenari ad alta
 mobilità \cite{wu2021irs}.
 
-\vspace{\baselineskip}
-Questi vincoli definiscono lo spazio delle soluzioni praticabili e
-guidano la progettazione degli algoritmi ML, imponendo tecniche di
-quantizzazione post-regressione oppure approcci di classificazione
-multiclasse direttamente sui $K$ livelli discreti.
+\subsection{Scalabilità a IRS di grandi dimensioni}
+Nel passaggio a superfici di grandi dimensioni, ad esempio una griglia
+$80\times80$ ($M=6400$), la cardinalità dello spazio delle azioni
+diventa rapidamente proibitiva ($|\mathcal{A}|=K^{6400}$ con $K=4$),
+rendendo impraticabile l'uso diretto di algoritmi RL standard anche in
+presenza di politiche parametrizzate.
+
+Per mantenere il problema trattabile, una strategia efficace consiste
+nel ridurre la dimensionalità dell'azione di controllo mantenendo una
+rappresentazione fisicamente significativa del beamforming passivo. Due
+approcci tipici sono:
+\begin{itemize}
+  \item \textbf{Raggruppamento degli elementi:} si impongono fasi
+    costanti su cluster di elementi adiacenti, con $G \ll M$ (ad
+    esempio $G=16$ blocchi $20\times20$), riducendo il numero di
+    variabili ottimizzate da $M$ a $G$;
+  \item \textbf{Rappresentazione latente:} la configurazione di fase
+    viene parametrizzata come $\boldsymbol{\theta}=f(\mathbf{z})$, con
+    $\mathbf{z}\in\mathbb{R}^d$ e $d\ll M$ (tipicamente $d=10$--$20$),
+    tramite modelli generativi o autoencoder variazionali.
+\end{itemize}
+
+In questo modello esteso si mantengono le definizioni di canale e
+potenza in \eqref{eq:heff} e \eqref{eq:P_r_tot}; lo stato resta
+$s_t=\mathbf{p}_t$, mentre l'azione diventa il vettore latente
+$a_t=\mathbf{z}_t$ (oppure l'indice dei cluster attivati). La reward
+può essere definita come:
+\begin{equation}
+  r(s_t,a_t)=10\log_{10}\left(
+    \frac{P_r\!\left(\mathbf{p}_t,\boldsymbol{\theta}(\mathbf{z}_t)\right)}
+    {P_{\text{noIRS}}\!\left(\mathbf{p}_t\right)}
+  \right),
+\end{equation}
+in continuità con la formulazione presentata in \cref{chap:scenario}.
+Questa impostazione rende più realistica l'ottimizzazione per IRS di
+grandi dimensioni e riduce l'overhead di controllo sul backhaul
+all'ordine di $d\log_2 K$ bit per aggiornamento \cite{3gpp_tr38901}.
+
+Complessivamente, i vincoli discussi definiscono lo spazio delle
+soluzioni praticabili e guidano la progettazione degli algoritmi di
+Machine Learning, orientando la scelta tra quantizzazione
+post-regressione e formulazioni di classificazione multiclasse sui
+livelli discreti di fase.
 
 \chapter{Algoritmi di Machine Learning considerati}
+
+\section{Regressione multivariata}
+
+\section{k-Nearest Neighbors}
+
+\section{Multi-Layer Perceptron (MLP) semplice}
+
+\section{Confronto tra modelli:}
+
+\subsection{Accuratezza}
+\subsection{Complessità}
+\subsection{Stabilità}
 
 \clearpage{\pagestyle{empty}\cleardoublepage}
 \chapter*{Ringraziamenti}
