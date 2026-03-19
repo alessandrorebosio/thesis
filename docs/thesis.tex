@@ -47,7 +47,7 @@
 
   \vspace{9mm}
   \begin{center}
-    {\large{\bf Sessione di Laurea I \\}}
+    {\large{\bf Sessione I \\}}
     {\large{\bf Anno Accademico 2025/2026\\}}
   \end{center}
 \end{titlepage}
@@ -183,25 +183,28 @@ ambienti indoor complessi.
 \cite{itu_p1238_2025}
 
 \section{Limiti delle soluzioni tradizionali}
-Le soluzioni tradizionali (aumento di potenza, densificazione,
-antenne direzionali e Massive MIMO) presentano limiti rilevanti.
-L'aumento di potenza è vincolato da normative e inefficienze
-energetiche; la densificazione comporta costi elevati, complessità di
-gestione e maggiore interferenza. Le architetture Massive MIMO,
-sebbene efficaci, richiedono numerose catene RF e introducono elevata
-complessità nell'acquisizione dell'Informazione sullo Stato del
-Canale (Channel State Information, CSI),
-soprattutto alle frequenze mmWave dove sensibilità al blocco e
-attenuazione sono più pronunciate
-\cite{itu_m2410_2017,itu_p1238_2025,3gpp_tr38901}.
+Le soluzioni tradizionali per il miglioramento della copertura
+presentano vincoli significativi. L'aumento della potenza trasmessa è
+limitato da normative sulla sicurezza elettromagnetica e da
+considerazioni di efficienza energetica; la densificazione della rete
+comporta costi infrastrutturali elevati, maggiore complessità
+gestionale e rischi di interferenza inter-cella. Le architetture
+Massive MIMO, sebbene promettenti per il guadagno di beamforming,
+richiedono numerose catene a Radio Frequenza (RF) e introducono oneri
+computazionali e di segnalazione significativi per l'acquisizione
+affidabile dell'Informazione sullo Stato del Canale (Channel State
+Information, CSI), specialmente nelle bande millimetriche dove la
+vulnerabilità al blocco e l'attenuazione sono critiche
+\cite{3gpp_tr38901,itu_m2410_2017,itu_p1238_2025}.
 
-Inoltre, molte soluzioni si concentrano esclusivamente su
-trasmettitore e ricevitore trascurando la possibilità di intervenire
-sull'ambiente di propagazione. Questo approccio mostra limiti
-crescenti quando la geometria degli spazi e i materiali causano
-penetrazioni e riflessioni complesse (tipiche degli scenari indoor),
-riducendo l'efficacia di metodi che si limitano a parametri lato
-stazione base o terminale.
+Un limite strutturale comune a queste soluzioni è la concentrazione
+esclusiva sull'ottimizzazione del trasmettitore e del ricevitore,
+trascurando il ruolo dell'ambiente di propagazione. Laddove geometrie
+complesse, materiali costruttivi e ostacoli generano effetti di
+riflessione, diffrazione e scattering difficili da controllare
+(scenario tipico degli ambienti indoor), i metodi convenzionali
+mostrano margini di miglioramento limitati, poiché operano su gradi
+di libertà poco influenti rispetto al canale effettivo percepito dall'utente.
 \enlargethispage{\baselineskip}
 
 \section{Intelligent Reflecting Surfaces: idea di base}
@@ -214,7 +217,7 @@ uno sfasamento (e, in alcune implementazioni, variazioni di ampiezza)
 al segnale incidente, permettendo di realizzare un beamforming
 passivo che ridistribuisce energia verso regioni d'interesse senza
 richiedere catene RF attive per ogni elemento
-\cite{wu2021irs,3gpp_tr38857}.
+\cite{3gpp_tr38857,wu2021irs}.
 
 Dal punto di vista del controllo, il nucleo del problema è la scelta
 dei coefficienti di riflessione per gli elementi IRS in modo da
@@ -247,6 +250,7 @@ valutazione comparativa delle prestazioni.
 \label{chap:fondamenti}
 
 \section{Propagazione radio in ambiente indoor}
+\label{sec:propagazione_indoor}
 Per modellare la propagazione radio indoor si adotta il modello di
 \emph{basic transmission loss} raccomandato dall'International
 Telecommunication Union - Radiocommunication Sector (ITU-R) P.1238
@@ -333,6 +337,15 @@ ms; e la dipendenza dalla posizione, per cui la configurazione ottima
 $\boldsymbol{\Theta}^\star = \arg\max_{\boldsymbol{\Theta}}
 P_r(\mathbf{p})$ varia con la posizione utente $\mathbf{p}$.
 
+\begin{figure}[htp]
+  \centering
+  \includegraphics[width=\textwidth,trim=0 125 0 125,clip]{img/irs_works.png}
+  \caption{Schema di funzionamento di una Intelligent Reflecting
+    Surface (IRS): segnale incidente dalla BS, riconfigurazione di fase
+  sugli elementi e beamforming verso l'UE.}
+  \label{fig:funzionamento_irs}
+\end{figure}
+
 \subsection{Motivazione per approcci basati su Machine Learning}
 Il problema di ottimizzazione delle fasi IRS per massimizzare la
 potenza ricevuta $P_r(\mathbf{p})$ o metriche correlate (SNR,
@@ -366,61 +379,65 @@ dalle coordinate $(x, y)$ dell'utente, valutando il guadagno di
 copertura ottenuto in ambienti indoor caratterizzati da propagazione
 multipath e blocco.
 
-\newpage
 \section{Modello di canale assistito da IRS}
 \label{sec:canaleIRS}
-In uno scenario assistito da IRS, il collegamento tra BS e UE è
-mediato dalla superficie riflettente. Supponendo che la BS trasmetta
-con potenza $P_t$ e che il canale presenti attenuazione di percorso
-su due tratte (BS$\rightarrow$IRS e IRS$\rightarrow$UE), si ottiene
-un modello a due hop per la potenza ricevuta, coerente con i canali
-cascaded BS-IRS-UE proposti \cite{guo2021cascaded}.
+In uno scenario assistito da IRS, il collegamento BS--UE è mediato da
+una superficie riflettente riconfigurabile. Assumendo una potenza di
+trasmissione $P_t$ e attenuazione di percorso sulle due tratte
+BS$\to$IRS e IRS$\to$UE, si adotta un modello cascaded a due hop,
+coerente con \cite{guo2021cascaded}.
 
-Sia $\mathbf{h}_{\text{BI}} \in \mathbb{C}^M$ il vettore di canale
-tra BS e gli $M$ elementi IRS, e sia $\mathbf{h}_{\text{IU}} \in
-\mathbb{C}^M$ il vettore di canale tra IRS e UE. Il canale
-complessivo BS→IRS→UE si esprime come:
+Sia $\mathbf{h}_{\mathrm{BI}} \in \mathbb{C}^{M}$ il vettore di
+canale tra BS e i $M$ elementi IRS, e sia $\mathbf{h}_{\mathrm{IU}}
+\in \mathbb{C}^{M}$ il vettore di canale tra IRS e UE. Il canale
+efficace BS$\to$IRS$\to$UE è:
 \begin{equation}
-  h_{\text{eff}} = \mathbf{h}_{\text{IU}}^H \,
-  \text{diag}(\boldsymbol{\Gamma}) \, \mathbf{h}_{\text{BI}},
+  h_{\mathrm{eff}} =
+  \mathbf{h}_{\mathrm{IU}}^{H}\,
+  \operatorname{diag}(\boldsymbol{\Gamma})\,
+  \mathbf{h}_{\mathrm{BI}},
   \label{eq:heff}
 \end{equation}
-dove $\boldsymbol{\Gamma} = [\Gamma_1, \dots, \Gamma_M]^T$ è il
-vettore dei coefficienti di riflessione \eqref{eq:reflection_coeff},
-e $\text{diag}(\boldsymbol{\Gamma})$ è la matrice diagonale con gli
-$\Gamma_m$ sulla diagonale (cfr. modello $\mathbf{H}_{I,k} =
-  \mathbf{G}^T \mathrm{diag}(\mathbf{h}_{r,k})$ per casi MISO in
-\cite{guo2021cascaded}). Assumendo per semplicità $\beta_m = 1$
-(riflessione ideale senza perdite resistive), si ha
-$\boldsymbol{\Gamma} = e^{j\boldsymbol{\theta}}$ con
-$\boldsymbol{\theta} = [\theta_1, \dots, \theta_M]^T$.
+dove $\boldsymbol{\Gamma}=[\Gamma_1,\dots,\Gamma_M]^T$ è il vettore
+dei coefficienti di riflessione definiti in
+\eqref{eq:reflection_coeff}, e
+$\operatorname{diag}(\boldsymbol{\Gamma})$ è la matrice diagonale con
+$\Gamma_m$ sulla diagonale (cfr. il modello
+  $\mathbf{H}_{I,k}=\mathbf{G}^T\operatorname{diag}(\mathbf{h}_{r,k})$ in
+\cite{guo2021cascaded}).
+
+Assumendo, per semplicità, riflessione ideale senza perdite
+($\beta_m=1,\ \forall m$), si ottiene
+$\boldsymbol{\Gamma}=e^{j\boldsymbol{\theta}}$, con
+$\boldsymbol{\theta}=[\theta_1,\dots,\theta_M]^T$.
 
 \subsection{Modellazione dei canali}
-Per modellare i vettori di canale $\mathbf{h}_{\text{BI}}$ e
-$\mathbf{h}_{\text{IU}}$, si adotta un modello geometrico semplificato
-coerente con la propagazione indoor descritta nella Sezione 2.1 e con
-scenari sub-6 GHz non-sparsi in \cite{guo2021cascaded}. In
-particolare, ogni elemento di canale $h_{\text{BI},m}$ e
-$h_{\text{IU},m}$ include:
+Per modellare i vettori di canale $\mathbf{h}_{\mathrm{BI}}$ e
+$\mathbf{h}_{\mathrm{IU}}$, si adotta un modello geometrico
+semplificato, coerente con la propagazione indoor descritta in
+\cref{sec:propagazione_indoor} e con scenari sub-6 GHz non sparsi
+\cite{guo2021cascaded}. In particolare, ciascun coefficiente
+$h_{\mathrm{BI},m}$ e $h_{\mathrm{IU},m}$ include:
 
 \begin{itemize}
-  \item \textbf{Path loss}: calcolato mediante \eqref{eq:itu_loss} in
-    funzione della distanza $d_{\text{BI},m}$
-    (BS$\rightarrow$elemento $m$) e $d_{\text{IU},m}$ (elemento
-    $m$$\rightarrow$UE), con parametri ambiente-specifici \cite{itu_p1238_2025};
-  \item \textbf{Shadow fading}: termine gaussiano log-normale
-    $X_\sigma$ con deviazione standard tipica 3--6 dB;
-  \item \textbf{Small-scale fading}: fase uniforme in $[0, 2\pi)$ per
-    simulare multipath in regime narrowband o OFDM su sottoportante singola.
+  \item \textbf{Path loss}: calcolato tramite \eqref{eq:itu_loss} in
+    funzione delle distanze $d_{\mathrm{BI},m}$ (BS $\rightarrow$
+    elemento $m$) e $d_{\mathrm{IU},m}$ (elemento $m$ $\rightarrow$ UE),
+    con parametri dipendenti dall'ambiente \cite{itu_p1238_2025};
+  \item \textbf{Shadow fading}: termine log-normale modellato mediante
+    variabile gaussiana $X_\sigma$ con deviazione standard tipica 3--6 dB;
+  \item \textbf{Small-scale fading}: fase casuale uniforme in
+    $[0,2\pi)$ per rappresentare gli effetti di multipath in regime
+    narrowband (o su singola sottoportante OFDM).
 \end{itemize}
 
-Questo modello cattura la geometria dell'ambiente e l'effetto della
-posizione utente $\mathbf{p}$ sui percorsi riflessi.
+Questo modello cattura sia la geometria dello scenario sia la
+dipendenza dei percorsi riflessi dalla posizione utente $\mathbf{p}$.
 
-La potenza ricevuta via IRS è quindi:
+La potenza ricevuta tramite IRS è quindi:
 \begin{equation}
-  P_r(\mathbf{p}, \boldsymbol{\theta}) = P_t \left|
-  h_{\text{eff}}(\mathbf{p}, \boldsymbol{\theta}) \right|^2.
+  P_r(\mathbf{p}, \boldsymbol{\theta}) =
+  P_t \left| h_{\mathrm{eff}}(\mathbf{p}, \boldsymbol{\theta}) \right|^2.
   \label{eq:Pr}
 \end{equation}
 
@@ -454,213 +471,277 @@ loss e fading propri, come nel modello con $h_{d,k}$ di
 i casi (con e senza link diretto) per valutare l'impatto dell'IRS in
 scenari di blocco completo (NLoS severo) e parziale.
 
-\chapter{Scenario di riferimento e modello di simulazione}
+\chapter{Scenario di riferimento}
 \label{chap:scenario}
 
-In questo capitolo si descrive lo scenario di riferimento adottato
-per la simulazione di un ambiente indoor assistito da IRS, con
-particolare attenzione alla geometria del sistema, al modello di
-canale e alle assunzioni semplificative. Si formalizza inoltre il
-problema di controllo delle fasi IRS in un framework di reinforcement
-learning (RL), definendo stato, azione e reward in coerenza con il
-modello descritto nei capitoli precedenti. Le metriche di valutazione
-includono SNR, potenza ricevuta e coverage gain rispetto allo
-scenario senza IRS.
-
 \section{Descrizione dello scenario}
-Lo scenario considera un ambiente indoor di tipo ``office NLoS'' come
-definito in ITU-R P.1238, modellato come una stanza rettangolare di
-dimensioni 10 m $\times$ 8 m $\times$ 3 m. La Base Station (BS) è
-posizionato in un angolo del soffitto al punto $(0, 0, 2.8)$ m,
-simulando un montaggio tipico per copertura in-building. L'IRS,
-composto da $M=64$ elementi (griglia $8 \times 8$), è montato su una
-parete laterale al punto $(9, 4, 1.5)$ m, orientato verso l'interno
-della stanza per massimizzare i percorsi riflessi verso l'utente.
-L'utente mobile (UE) si muove su un piano a quota $z=1$ m, con
-posizione $\mathbf{p} = (x, y, 1)$ che varia uniformemente nell'area
-$[1, 8] \times [1, 7]$ m, evitando regioni di copertura diretta forte.
+\label{sec:scenario}
+Lo scenario analizzato fa riferimento a un ambiente \textit{indoor}di
+tipo \textit{office NLoS} (Non Line-of-Sight), come definito
+nellaraccomandazione ITU-R P.1238~\cite{itu_p1238_2025}. L'ambiente
+èmodellato come una stanza rettangolare di dimensioni pari
+a$10\,\mathrm{m} \times 8\,\mathrm{m} \times 3\,\mathrm{m}$.
 
-Questo layout cattura le sfide tipiche di copertura NLoS indoor, con
-ostacoli (pareti interne) che bloccano il link diretto BS-UE,
-rendendo l'IRS essenziale per il rerouting del segnale.
+La \textit{Base Station} (BS) è installata in prossimità di un angolo
+del soffitto, nel punto $(0,\, 0,\, 2.8)\,\mathrm{m}$, in accordo con
+una tipica configurazione per copertura \textit{in-building}. Un
+\textit{Intelligent Reflecting Surface} (IRS), costituito da $M = 64$
+elementi disposti in una griglia $8 \times 8$, è montato su una
+parete laterale nel punto $(9,\, 4,\, 1.5)\,\mathrm{m}$ e orientato
+verso l'interno della stanza, in modo da massimizzare la riflessione
+dei percorsi utili verso l'utente.
 
-\section{Modello di sistema}
-Il sistema considera uno scenario single-user, narrowband a frequenza
-$f = 3.5$ GHz (banda sub-6 GHz), coerente con le assunzioni di
-propagazione non-sparsa descritte nel \cref{chap:fondamenti}.
+L'utente mobile (UE) si muove su un piano orizzontale a quota $z =
+1\,\mathrm{m}$, con posizione $\mathbf{p} = (x, y, 1)$ distribuita
+uniformemente nell'area $[1,8] \times [1,7]\,\mathrm{m}$. Tale
+regione è stata definita escludendo le zone di copertura diretta più
+intensa, così da enfatizzare le condizioni NLoS e valutare
+l'efficacia del contributo riflesso mediato dall'IRS.
 
-Il modello di canale cascaded BS-IRS-UE segue la formulazione del
-\cref{chap:fondamenti} (equazioni \eqref{eq:heff}--\eqref{eq:Pr}). Siano
-$\mathbf{h}_{\text{BI}} \in \mathbb{C}^{M}$ il vettore di canale
-BS-IRS e $\mathbf{h}_{\text{IU}}(\mathbf{p}) \in \mathbb{C}^{M}$ il
-vettore di canale IRS-UE dipendente dalla posizione utente
-$\mathbf{p}$. Il vettore di fase IRS è $\boldsymbol{\theta} =
-[\theta_1, \dots, \theta_M]^T$ con quantizzazione a $K=4$ livelli (2
-bit per elemento):
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=\textwidth]{pdf/scenario.pdf}
+  \caption{Geometria dello scenario indoor: vista 3D con BS (blu),
+  IRS (verde) e area di movimento dell'UE (arancione).}
+  \label{fig:scenario}
+\end{figure}
+
+Il layout descritto rappresenta una configurazione tipica di scenario
+indoor NLoS, caratterizzata dalla presenza di ostacoli (ad esempio
+pareti o arredi interni) che possono attenuare o bloccare il
+collegamento diretto BS--UE. In tali condizioni, l'IRS assume un
+ruolo chiave nel ridirezionare il segnale e migliorare la qualità
+complessiva della copertura radio.
+
+\section{Assunzioni del modello}
+Per rendere il problema trattabile e isolare l'effetto del controllo
+di fase IRS, si adottano le seguenti assunzioni.
+
+\paragraph{Dinamica del canale e localizzazione}
+Si assume che il canale sia quasi-statico, ossia costante all'interno
+di un frame di durata $T_f=10$ ms. Il controller IRS non dispone di
+CSI perfetta completa, bensì utilizza la posizione UE $\mathbf{p}$
+stimata tramite localizzazione indoor con accuratezza media pari a
+$0.5$ m. Durante un singolo frame la posizione dell'utente è
+considerata fissa; tra frame successivi $\mathbf{p}$ varia,
+generando così i campioni del dataset di training e test.
+
+\paragraph{Configurazione hardware dell'IRS}
+Si assume che l'IRS sia continuamente operativa con tutti gli elementi
+che operano a modulo unitario ($\beta_m=1,\ \forall m$), senza
+modalità off-state o guasti parziali. Questa ipotesi rappresenta
+una configurazione idealizzata; in scenari realistici è possibile
+includere perdite di inserzione mediante $\beta_m \approx 0.9$--$0.95$.
+
+\paragraph{Comunicazione e controllo}
+L'overhead di controllo è trascurato, pertanto latenza e segnalazione
+sul collegamento BS--IRS (backhaul dedicato) non sono modellate
+esplicitamente. Si assume che il tempo di riconfigurazione degli
+elementi IRS sia trascurabile rispetto a $T_f$.
+
+\paragraph{Modello di rumore}
+Per il rumore termico si assume una densità spettrale di potenza
+$N_0=-174$ dBm/Hz con larghezza di banda di interesse $B=20$ MHz,
+da cui la potenza di rumore integrata è
+\begin{equation}
+  N = N_0 + 10\log_{10}(B) \approx -101\ \text{dBm}.
+\end{equation}
+Non si include fattore di rumore addizionale (figura di rumore
+unitaria), ipotizzando ricevitori con amplificazione a basso rumore.
+
+\paragraph{Validità delle assunzioni}
+Queste ipotesi semplificative permettono di focalizzare l'analisi sul
+contributo del beamforming passivo IRS e sul confronto tra strategie
+di controllo differenti, isolando gli effetti del controllo di fase
+dai fenomeni secondari.
+
+\section{Modello di canale specifico}
+In questa sezione si considera uno scenario a utente singolo
+(single-user), in banda stretta (narrowband), alla
+frequenza $f = 3.5$ GHz (banda sub-6 GHz). Tale scelta è coerente con
+le ipotesi di propagazione indoor introdotte in
+\cref{sec:propagazione_indoor}.
+
+Il canale cascaded BS--IRS--UE segue la formulazione presentata nella
+\cref{sec:canaleIRS} (equazioni \eqref{eq:heff}--\eqref{eq:Pr}). In
+particolare, $\mathbf{h}_{\text{BI}} \in \mathbb{C}^{M}$ indica il
+vettore di canale BS--IRS, mentre
+$\mathbf{h}_{\text{IU}}(\mathbf{p}) \in \mathbb{C}^{M}$ indica il
+vettore IRS--UE dipendente dalla posizione utente $\mathbf{p}$. Il
+vettore di fase IRS è
+$\boldsymbol{\theta} = [\theta_1, \dots, \theta_M]^T$, con
+quantizzazione a $K=4$ livelli (2 bit per elemento):
 \begin{equation}
   \theta_m \in \left\{0, \frac{2\pi}{K}, \dots, \frac{2\pi(K-1)}{K}\right\}.
   \label{eq:theta_quantized}
 \end{equation}
 
-La potenza ricevuta totale segue quindi la formulazione generale
-\eqref{eq:P_r_tot}, dove nel presente scenario il primo termine
-rappresenta il collegamento diretto attenuato secondo ITU-R P.1238
-(office NLoS).
+La potenza ricevuta totale è descritta da \eqref{eq:P_r_tot}. Nel
+nostro scenario, il primo termine rappresenta il collegamento diretto
+attenuato secondo ITU-R P.1238 (office NLoS).
 Il modello incorpora:
 \begin{itemize}
-  \item \textbf{Path loss:} calcolato mediante l'equazione \eqref{eq:itu_loss}
-    in funzione delle distanze BS--elemento IRS e elemento IRS--UE;
+  \item \textbf{Path loss:} calcolato tramite \eqref{eq:itu_loss} in
+    funzione delle distanze BS--elemento IRS e elemento IRS--UE;
   \item \textbf{Shadow fading log-normale:} con deviazione standard
-    $\sigma = 4$ dB, rappresentativo di uffici indoor;
+    $\sigma = 4$ dB, valore tipico per ambienti d'ufficio indoor;
   \item \textbf{Small-scale fading:} fase aleatoria uniforme in
     $[0, 2\pi)$ per simulare fenomeni di multipath in regime narrowband.
 \end{itemize}
 
-Questa formulazione cattura l'effetto della posizione utente sulla
-configurazione ottimale delle fasi IRS e consente di valutare il
-guadagno di copertura rispetto allo scenario senza IRS.
-
-\begin{figure}[ht]
-  \centering
-  \includegraphics[width=0.9\textwidth]{img/model.png}
-  \caption{Layout dello scenario indoor con BS, IRS e posizioni utente.}
-  \label{fig:scenario}
-\end{figure}
-
-\section{Assunzioni semplificative}
-Per rendere il problema trattabile e isolare l'effetto del controllo
-di fase IRS, si adottano le seguenti assunzioni.
-
-Si assume che il canale sia quasi-statico, ossia costante all'interno
-di un frame di durata $T_f=10$ ms. Il controller IRS non dispone di
-CSI perfetta completa, ma utilizza la posizione UE $\mathbf{p}$
-stimata tramite localizzazione indoor con accuratezza media pari a
-0.5 m. Durante un frame la posizione dell'utente è considerata fissa;
-tra frame successivi $\mathbf{p}$ varia e genera i campioni del
-dataset (training/test). Si assume inoltre che l'IRS sia sempre
-attiva, con tutti gli elementi che operano con modulo unitario,
-$\beta_m=1,\ \forall m$, senza modalità off-state.
-
-L'overhead di controllo è trascurato, pertanto latenza e segnalazione
-sul collegamento BS--IRS (backhaul dedicato) non sono modellate
-esplicitamente. Per il rumore termico si assume $N_0=-174$ dBm/Hz e
-banda $B=20$ MHz, da cui
-\[
-  N = N_0 + 10\log_{10}(B) \approx -101\ \text{dBm},
-\]
-senza fattore di rumore addizionale.
-
-Queste assunzioni permettono di focalizzare l'analisi sul contributo
-del beamforming passivo IRS e sul confronto tra strategie di controllo.
-
-\section{Metriche di valutazione}
-Le prestazioni del sistema IRS sono valutate mediante tre metriche
-principali, calcolate sulla distribuzione spaziale delle posizioni
-utente $\mathbf{p}$. \cite{guo2021cascaded, wu2019irs}.
-
-\paragraph{Rapporto Segnale-Rumore (SNR).}
-Per una data posizione $\mathbf{p}$ e configurazione di fase
-$\boldsymbol{\theta}$, si considera:
-\begin{equation}
-  \gamma(\mathbf{p}, \boldsymbol{\theta}) =
-  \frac{P_r(\mathbf{p}, \boldsymbol{\theta})}{N_0 B},
-\end{equation}
-dove $N_0$ è la densità spettrale di rumore e $B$ la banda del
-sistema. Quando necessario, la metrica è riportata in dB come
-$10\log_{10}\gamma$.
-
-\paragraph{Potenza ricevuta.}
-Si analizza la potenza ricevuta totale definita in \eqref{eq:P_r_tot},
-in termini medi e tramite funzione di distribuzione cumulativa (CDF)
-\begin{equation}
-  F_{P_r}(x)=\Pr\!\left(P_r \le x\right),
-\end{equation}
-calcolata sulle posizioni utente, per confrontare robustezza e
-variabilità delle diverse strategie di controllo IRS.
-
-\paragraph{Coverage gain.}
-Il guadagno di copertura rispetto al caso senza IRS è definito come:
-\begin{equation}
-  G_c(\mathbf{p}) = 10\log_{10}
-  \left(
-    \frac{P_r^{\mathrm{opt}}(\mathbf{p})}
-    {P_r^{\mathrm{noIRS}}(\mathbf{p})}
-  \right).
-  \label{eq:coverage_gain}
-\end{equation}
-In aggiunta, si considera la probabilità di copertura:
-\begin{equation}
-  P_{\mathrm{cov}} = \Pr\!\left(\gamma > 10\,\mathrm{dB}\right),
-\end{equation}
-ossia la frazione di area in cui il servizio rispetta una soglia SNR minima.
+In questo modo si descrive in modo semplice l'effetto della posizione
+utente sulla configurazione ottima delle fasi IRS e si può valutare il
+guadagno di copertura rispetto al caso senza IRS.
 
 \newpage
-\subsection{Formulazione RL per il controllo delle fasi IRS}
-Il problema di ottimizzazione delle fasi IRS, definito in
-\eqref{eq:opt_problem} di \cref{chap:fondamenti}, si
-formalizza come un \emph{Markov Decision Process} (MDP) per
-Reinforcement Learning (RL) con i seguenti elementi:
+\section{Metriche di valutazione}
+Per quantificare le prestazioni dello scenario indoor assistito da
+IRS si adottano tre metriche principali: rapporto segnale-rumore
+(SNR), potenza ricevuta e \textit{coverage gain} rispetto a una
+configurazione di riferimento senza IRS.
 
-\paragraph{Spazio degli stati} $\mathcal{S}$: La posizione discreizzata
-dell'utente $\mathbf{p}_t = (x_t, y_t) \in \mathcal{G} \subset [1,8]
-\times [1,7]$, con $\mathcal{G}$ griglia di risoluzione $0.5$ m
-($|\mathcal{G}| \approx 200$). Lo stato determina univocamente i
-canali $\mathbf{h}_{\mathrm{IU}}(\mathbf{p}_t)$ e
-$\mathbf{h}_{\mathrm{direct}}(\mathbf{p}_t)$ secondo il modello di
-\cref{sec:canaleIRS}.
-
-\paragraph{Spazio delle azioni} $\mathcal{A}$: Il vettore di fasi
-quantizzate $\boldsymbol{\theta}_t = [\theta_{t,1}, \dots,
-\theta_{t,M}]^\top \in \mathcal{A}$, con ciascun elemento vincolato
-ai quattro livelli di fase definiti in \eqref{eq:theta_quantized};
-\[
-  |\mathcal{A}| = K^M = 4^{64}.
-\]
-La dimensionalità proibitiva dello spazio delle azioni motiva l'uso
-di politiche parametrizzate
-$\pi_{\boldsymbol{\phi}}(\boldsymbol{\theta}_t | s_t)$.
-
-\paragraph{Funzione di reward} $r: \mathcal{S} \times \mathcal{A} \to
-\mathbb{R}$:
+\paragraph{Rapporto segnale-rumore (SNR)}
+Il rapporto segnale-rumore in un punto di posizione $\mathbf{p}$, per
+una data configurazione di fase $\boldsymbol{\theta}$ dell'IRS, è definito come
 \begin{equation}
-  r(s_t, a_t) = 10\log_{10} \left( \frac{P_r(\mathbf{p}_t,
+  \mathrm{SNR}(\mathbf{p}, \boldsymbol{\theta}) =
+  \frac{P_r(\mathbf{p}, \boldsymbol{\theta})}{N},
+  \label{eq:snr}
+\end{equation}
+dove $P_r(\mathbf{p}, \boldsymbol{\theta})$ è la potenza ricevuta
+definita in \eqref{eq:Pr} e $N$ è la potenza di rumore termico
+determinata a partire da $N_0$ e dalla banda $B$ \cite{3gpp_tr38901}.
+Nelle simulazioni lo SNR può essere espresso in dB come
+$10\log_{10}(\mathrm{SNR})$ e rappresenta l'indicatore di base per
+valutare la qualità del collegamento in ciascuna posizione utente.
+
+\paragraph{Potenza ricevuta}
+La potenza ricevuta in $\mathbf{p}$, già introdotta in \eqref{eq:Pr},
+viene utilizzata come metrica diretta dell'efficacia del beamforming
+passivo IRS \cite{wu2019irs}. Nel caso con collegamento diretto
+BS$\rightarrow$UE, si considera $P_r^{\text{tot}}(\mathbf{p},
+\boldsymbol{\theta})$ definita in \eqref{eq:P_r_tot}
+\cite{guo2021cascaded}. La potenza media sull'area valuta il guadagno
+globale IRS; i valori puntuali evidenziano zone di copertura
+migliorate.
+
+\paragraph{Coverage gain}
+Il \textit{coverage gain} misura il miglioramento di copertura
+introdotto dall'IRS rispetto al caso senza riflessione assistita. È
+definito puntualmente come:
+\begin{equation}
+  G_c(\mathbf{p}) =
+  10\log_{10}\!\left(
+    \frac{P_r^{\mathrm{opt}}(\mathbf{p})}{P_r^{\mathrm{noIRS}}(\mathbf{p})}
+  \right) \cite{wu2019irs},
+  \label{eq:coverage_gain}
+\end{equation}
+dove $P_r^{\mathrm{noIRS}}(\mathbf{p})$ è la potenza senza IRS (solo
+diretto o NLoS puro). La probabilità di copertura è
+$P_{\mathrm{cov}}(\gamma_{\mathrm{th}}) = \Pr(\gamma >
+\gamma_{\mathrm{th}})$, con $\gamma_{\mathrm{th}}=10\,$dB per
+servizio base \cite{3gpp_tr38857}. Si valuta anche $\mathbb{E}[G_c]$
+medio sull'area di simulazione.
+
+\section{Formulazione RL per il controllo delle fasi IRS}
+Il problema di ottimizzazione delle fasi IRS definito in
+\eqref{eq:opt_problem} nella \cref{sec:canaleIRS} viene modellato
+come un Markov Decision Process (MDP) risolto tramite Reinforcement
+Learning (RL). Il RL è un paradigma di apprendimento automatico in
+cui un agente interagisce con un ambiente, osservando stati e
+ricevendo ricompense in base alle proprie azioni, con l'obiettivo di
+massimizzare la ricompensa cumulativa. A differenza
+dell'apprendimento supervisionato, non richiede dati etichettati: la
+strategia ottimale viene appresa per tentativi ed errori. Nel nostro
+caso, l'agente corrisponde al controller IRS, l'ambiente rappresenta
+la geometria indoor e le condizioni di propagazione, mentre la
+ricompensa misura il guadagno di potenza ricevuta rispetto alla
+situazione senza IRS.
+
+\paragraph{Spazio degli stati}
+Lo \emph{stato} racchiude tutte le informazioni necessarie al
+controller per prendere una decisione corretta. Per noi, lo
+stato è la posizione discretizzata dell'utente:
+\begin{align}
+  \mathcal{S} &= \text{insiemi di posizioni discrete} \\
+  \mathbf{p}_t &= (x_t, y_t) \in \mathcal{G} \subset [1,8] \times [1,7]
+\end{align}
+dove $\mathcal{G}$ è una griglia con spaziatura $0.5$ m, quindi circa
+200 posizioni possibili. Dalla posizione, il modello di canale in
+\cref{sec:canaleIRS} ricava univocamente gli oggetti del canale
+$\mathbf{h}_{\mathrm{IU}}$ e $\mathbf{h}_{\mathrm{direct}}$, che
+determinano come il segnale si propaga.
+
+\paragraph{Spazio delle azioni}
+Un'azione rappresenta una decisione del controller IRS; nel nostro
+caso coincide con il vettore delle fasi applicate a tutti gli
+elementi della superficie:
+\begin{align}
+  \mathcal{A} &: \text{insieme delle configurazioni di fase}\\
+  \mathbf{a}_t &= \boldsymbol{\theta}_t =
+  [\theta_{t,1}, \dots, \theta_{t,M}]^\top.
+\end{align}
+Con $M = 64$ elementi, lo spazio delle azioni contiene quindi
+$4^{64}$ possibili configurazioni, un numero astronomico.   Di
+conseguenza, un'esplorazione esaustiva risulta impraticabile e il
+controller IRS deve adottare una \emph{policy} parametrizzata che,
+dato lo stato del sistema, predice direttamente una configurazione di
+fase “buona” senza enumerare tutte le azioni possibili.
+
+\paragraph{Funzione di reward}
+La recompensa guida l'apprendimento: premia le azioni che migliorano
+la potenza ricevuta e punisce quelle che la peggiorano. Si definisce
+come il guadagno di copertura in dB:
+\begin{equation}
+  r_t = 10\log_{10} \left( \frac{P_r(\mathbf{p}_t,
   \boldsymbol{\theta}_t)}{P_{r,\mathrm{noIRS}}(\mathbf{p}_t)} \right)
   \quad [\text{dB}],
+  \label{eq:reward_RL}
 \end{equation}
-dove $P_r(\cdot,\cdot)$ è definita in \eqref{eq:P_r_tot} e
-$P_{r,\mathrm{noIRS}}(\mathbf{p}_t) = P_t
-|\mathbf{h}_{\mathrm{direct}}(\mathbf{p}_t)|^2$ è la potenza senza
-IRS. Questa reward enfatizza direttamente il \emph{coverage gain}
-definito in \eqref{eq:coverage_gain}.
+dove $P_r(\mathbf{p}_t, \boldsymbol{\theta}_t)$ è la potenza ricevuta
+totale (con IRS) data da \eqref{eq:P_r_tot}, mentre
+$P_{r,\mathrm{noIRS}}(\mathbf{p}_t)$ è la potenza ricevuta senza
+controllo IRS. Valori positivi significano che l'azione ha migliorato
+la copertura; valori negativi indicano peggioramento.
 
-\paragraph{Dinamica di transizione} $P(s_{t+1} | s_t, a_t)$:
-$\mathbf{p}_{t+1} \sim \mathcal{U}(\mathcal{G})$ (uniforme, i.i.d.),
-coerente con il modello quasi-statico ($T_f=10$ ms).
-
-\paragraph{Policy} $\pi_{\boldsymbol{\phi}}: \mathcal{S} \to
-\Delta^{|\mathcal{A}|-1}$: La politica parametrizzata da
-$\boldsymbol{\phi}$ da apprendere risolve
+\paragraph{Dinamica di transizione}
+Specifica come il sistema evolve da uno stato al prossimo. Nel nostro
+caso, l'utente si muove casualmente alla prossima timestep:
 \begin{equation}
-  \pi^{\star}_{\boldsymbol{\phi}} =
-  \arg\max_{\pi_{\boldsymbol{\phi}}} \; \mathbb{E}_{\mathbf{p}_t \sim
-  \mathcal{U}(\mathcal{G})} \left[ r(\mathbf{p}_t,
-  \pi_{\boldsymbol{\phi}}(\mathbf{p}_t)) \right],
+  \mathbf{p}_{t+1} \sim \mathcal{U}(\mathcal{G}),
 \end{equation}
-con episodi di $T=1$ step (problema statico, non-sequenziale).
+ossia la nuova posizione è estratta uniformemente da $\mathcal{G}$.
+Questa scelta riflette il modello quasi-statico: entro un frame
+($10$ ms), la geometria del canale non cambia; da un frame al
+successivo, l'utente ha una nuova posizione.
 
-\chapter{Formulazione del problema di controllo IRS}
+\paragraph{Policy da apprendere}
+La \emph{politica} $\pi$ è la strategia che il controller IRS
+impiega. Si parametrizza con un vettore di pesi $\boldsymbol{\phi}$
+(ad esempio, i pesi di una rete neurale), così che la policy può
+essere aggiornata durante l'apprendimento:
+\begin{equation}
+  \pi_{\boldsymbol{\phi}}(\boldsymbol{\theta} \mid \mathbf{p}) =
+  P(\text{scegliere azione } \boldsymbol{\theta} \text{ nello stato }
+  \mathbf{p}),
+\end{equation}
+L'obiettivo è trovare i pesi $\boldsymbol{\phi}^{\star}$ che massimizzano
+la ricompensa attesa:
+\begin{equation}
+  \boldsymbol{\phi}^{\star} =
+  \arg\max_{\boldsymbol{\phi}} \mathbb{E}_{\mathbf{p} \sim
+  \mathcal{U}(\mathcal{G})} \left[ r(\mathbf{p},
+  \pi_{\boldsymbol{\phi}}(\mathbf{p})) \right],
+\end{equation}
+dove la media è sulle posizioni degli utenti. Poiché il problema è
+statico ($T=1$ solo step per episodio), non abbiamo una successione
+lunga di azioni; ogni episodio consiste nel controller scegliere
+$\boldsymbol{\theta}$ per una posizione $\mathbf{p}$ e ricevere la
+ricompensa corrispondente.
+
+\chapter{Formulazione del problema di controllo}
 \label{chap:controlloIRS}
 
-Questo capitolo formalizza il problema di controllo delle fasi
-dell'IRS in termini di mappatura ingresso--uscita appresa da un
-modello di Machine Learning, in coerenza con lo scenario e il modello
-di simulazione descritti in \cref{chap:scenario}.
-L'obiettivo è approssimare, con un modello data-driven, la
-configurazione di fase che massimizza le metriche di copertura
-(potenza ricevuta, SNR, coverage gain) per ciascuna posizione utente
-o stato del canale \cite{guo2021cascaded,wu2019irs}.
-
-\section{Formulazione del problema di controllo}
 Richiamando il modello di canale assistito da IRS introdotto nel
 \cref{chap:fondamenti}, indichiamo con $\boldsymbol{\theta} =
 [\theta_1,\dots,\theta_M]^T$ il vettore delle fasi applicate dai $M$
@@ -691,16 +772,15 @@ ingresso $\mathcal{X}$, di uscita $\mathcal{\Theta}$ e i vincoli
 pratici da rispettare.
 
 \section{Ingresso al sistema di Machine Learning}
-\label{sec:inputML}
-Nel contesto di questa tesi si considerano due possibili scelte per il
-vettore di ingresso $\mathbf{x}$ al modello di Machine Learning:
+Lo spazio di ingresso $\mathcal{X}$ rappresenta tutte le informazioni
+disponibili al controller IRS per configurare le fasi degli elementi.
+Nel nostro scenario semplificato, si considerano due approcci complementari.
 
 \subsection{Posizione utente}
 Nel primo caso, l'ingresso è dato direttamente dalla posizione utente
 stimata, $\mathbf{x} = \mathbf{p} = [x, y]^T$, ottenuta tramite
 localizzazione indoor con accuratezza media pari a $0.5$~m, come
-assunto in \cref{chap:scenario}. Il modello ML apprende
-quindi la mappatura
+assunto in \cref{chap:scenario}. Il modello ML apprende quindi la mappatura
 \[
   f_{\boldsymbol{\phi}} : \mathbf{p} \mapsto \boldsymbol{\theta},
 \]
@@ -711,7 +791,6 @@ sulla base di un dataset di coppie $\{(\mathbf{p}^{(i)},
 offline. Questa scelta ha il vantaggio di ridurre fortemente la
 dimensionalità dell'ingresso e l'onere di stima della CSI \cite{piroddi2023irs}.
 
-\newpage
 \subsection{CSI semplificato}
 In alternativa, si può considerare come ingresso un insieme di
 parametri derivati dal canale BS--IRS--UE, riducendo la CSI completa
@@ -736,6 +815,48 @@ più vicina ai metodi di beamforming basati sulla CSI classici, ma con
 complessità ridotta e maggiore robustezza a errori di stima
 \cite{guo2021cascaded}.
 
+\section{Vincoli pratici}
+Accanto alla formulazione ideale \eqref{eq:problema_controllo}, il
+sistema deve rispettare vincoli hardware e operativi derivanti
+dall'implementazione fisica.
+
+\paragraph{Quantizzazione di fase}
+Ogni elemento IRS riflette solo in corrispondenza di $K = 4$ fasi
+discrete (2 bit per elemento). Ciò riduce il guadagno massimo
+raggiungibile rispetto al caso continuo, introducendo un
+"quantization loss". Nel training del modello ML, le previsioni di
+fase vengono discretizzate all'elemento quantizzato più vicino:
+\begin{equation}
+  \theta_m^{\text{quantized}} = \arg\min_{k \in \{0, 1, 2, 3\}}
+  \left| \theta_m^{\text{predicted}} - \frac{2\pi k}{4} \right|.
+\end{equation}
+
+\paragraph{Latenza di riconfigurazione}
+Sebbene il tempo di aggiornamento dei diodi PIN o varattori sia
+nell'ordine dei microsecondi, l'overhead di segnalazione dal
+controller alla superficie IRS introduce latenza dell'ordine di 1--10
+ms. Nel modello quasi-statico adottato, con frame duration $T_f = 10$
+ms, si assume che la riconfigurazione avvenga entro il frame,
+trascurando il contributo della latenza ai fini della presente analisi.
+
+\paragraph{Coerenza temporale}
+Il problema di controllo è formulato come \emph{statico}, ossia ogni
+episodio consiste in una singola mappatura stato $\rightarrow$
+azione. In realtà, la copertura evolve nel tempo: l'utente si muove,
+il canale fluttua (small-scale fading), e la configurazione ottima
+$\boldsymbol{\theta}^\star$ varia. Le assunzioni semplificative
+permettono di isolare l'effetto della geometria e della posizione;
+estensioni future potranno includere dinamica temporale tramite
+modelli predittivi o RL multi-step.
+
+\paragraph{Link budget}
+La potenza trasmessa è fissata a $P_t = 30$ dBm (configurazione
+tipica BS indoor). Il rumore termico è $N = -101$ dBm (banda 20 MHz,
+figura di rumore unitaria). Questi valori definiscono il range di SNR
+raggiungibile (tipicamente 0--40 dB) e vincolano i guadagni
+realistici della copertura assistita da IRS, limitando le metriche di
+performance a valori fisicamente plausibili.
+
 \section{Output: configurazione di fase IRS}
 L'uscita del sistema di Machine Learning è sempre la configurazione
 di fase della superficie IRS, rappresentata dal vettore
@@ -754,164 +875,95 @@ si può formulare l'uscita come vettore di variabili discrete, con
 ogni $\theta_m$ appartenente direttamente al set di livelli
 quantizzati ammessi dall'hardware.
 
-\newpage
-\section{Vincoli pratici}
-La mappatura $f_{\boldsymbol{\phi}}$ deve rispettare vincoli pratici
-imposti dalla tecnologia IRS \cite{wu2019irs,3gpp_tr38857}:
-
-\subsection{Quantizzazione discreta della fase}
-Ciascun elemento IRS può assumere solo
-$K=4$ livelli di fase equispaziati, come definito in
-\eqref{eq:theta_quantized} (risoluzione di $2$ bit/elemento). La
-quantizzazione discreta ($\Delta\theta = 90^\circ$) comporta una
-perdita di circa $2$--$3$ dB rispetto al caso a fase continua, ma
-riduce la complessità hardware: tipicamente sono sufficienti $1$--$2$
-diodi PIN per elemento, contro i $4+$ richiesti da configurazioni con
-$K=16$ \cite{wu2021irs}.
-
-\subsection{Numero di elementi e complessità}
-Si considerano configurazioni
-con $M=32$ o $M=64$ elementi (griglia $8\times8$), compatibili con i
-vincoli di implementazione: ingombro fisico (circa $0.5\times0.5$ m a
-$3.5$ GHz), mutual coupling (circa $-15$ dB) e capacità di controllo
-del backhaul (circa $10^3$ bit/frame). Il guadagno di beamforming
-passivo cresce quadraticamente con $M$ ($G_\text{passivo}\propto M^2$),
-mentre la cardinalità dello spazio delle azioni cresce in modo
-esponenziale ($K^M$) \cite{wu2019irs}.
-
-\subsection{Modulo di riflessione unitario}
-Si assume
-$\beta_m=1,\ \forall m$ (assenza di perdite di inserzione). Tale
-ipotesi è plausibile per dispositivi IRS avanzati ($\beta_m>0.9$), ma
-rimane ottimistica rispetto a molti prototipi
-($\beta_m=0.7$--$0.85$). In presenza di perdite realistiche, il
-coverage gain si riduce tipicamente di circa $1$--$2$ dB
-\cite{3gpp_tr38857}.
-
-\subsection{Latenza di riconfigurazione}
-Il tempo di commutazione
-della fase può essere inferiore a $1$ ms per elemento (switch dei
-diodi PIN), ma la riconfigurazione complessiva della superficie
-richiede in media $T_\text{config}\sim5$--$10$ ms per $M=64$.
-Questo limite riduce la capacità di adattamento in scenari ad alta
-mobilità \cite{wu2021irs}.
-
-\subsection{Scalabilità a IRS di grandi dimensioni}
-Nel passaggio a superfici di grandi dimensioni, ad esempio una griglia
-$80\times80$ ($M=6400$), la cardinalità dello spazio delle azioni
-diventa rapidamente proibitiva ($|\mathcal{A}|=K^{6400}$ con $K=4$),
-rendendo impraticabile l'uso diretto di algoritmi RL standard anche in
-presenza di politiche parametrizzate.
-
-Per mantenere il problema trattabile, una strategia efficace consiste
-nel ridurre la dimensionalità dell'azione di controllo mantenendo una
-rappresentazione fisicamente significativa del beamforming passivo. Due
-approcci tipici sono:
-\begin{itemize}
-  \item \textbf{Raggruppamento degli elementi:} si impongono fasi
-    costanti su cluster di elementi adiacenti, con $G \ll M$ (ad
-    esempio $G=16$ blocchi $20\times20$), riducendo il numero di
-    variabili ottimizzate da $M$ a $G$;
-  \item \textbf{Rappresentazione latente:} la configurazione di fase
-    viene parametrizzata come $\boldsymbol{\theta}=f(\mathbf{z})$, con
-    $\mathbf{z}\in\mathbb{R}^d$ e $d\ll M$ (tipicamente $d=10$--$20$),
-    tramite modelli generativi o autoencoder variazionali.
-\end{itemize}
-
-In questo modello esteso si mantengono le definizioni di canale e
-potenza in \eqref{eq:heff} e \eqref{eq:P_r_tot}; lo stato resta
-$s_t=\mathbf{p}_t$, mentre l'azione diventa il vettore latente
-$a_t=\mathbf{z}_t$ (oppure l'indice dei cluster attivati). La reward
-può essere definita come:
-\begin{equation}
-  r(s_t,a_t)=10\log_{10}\left(
-    \frac{P_r\!\left(\mathbf{p}_t,\boldsymbol{\theta}(\mathbf{z}_t)\right)}
-    {P_{\text{noIRS}}\!\left(\mathbf{p}_t\right)}
-  \right),
-\end{equation}
-in continuità con la formulazione presentata in \cref{chap:scenario}.
-Questa impostazione rende più realistica l'ottimizzazione per IRS di
-grandi dimensioni e riduce l'overhead di controllo sul backhaul
-all'ordine di $d\log_2 K$ bit per aggiornamento \cite{3gpp_tr38901}.
-
-Complessivamente, i vincoli discussi definiscono lo spazio delle
-soluzioni praticabili e guidano la progettazione degli algoritmi di
-Machine Learning, orientando la scelta tra quantizzazione
-post-regressione e formulazioni di classificazione multiclasse sui
-livelli discreti di fase.
-
-\chapter{Algoritmi di Machine Learning considerati}
+\chapter{Algoritmi di Machine Learning}
 \label{chap:algoritmi}
 
-In questo capitolo vengono presentati i tre algoritmi di machine
-learning selezionati per stimare la configurazione di fase ottimale
-dell'IRS in funzione della posizione utente: regressione
-multivariata, k-Nearest Neighbors (k-NN) e Multi-Layer Perceptron
-(MLP) semplice. Questi algoritmi sono scelti per la loro semplicità,
-interpretabilità e efficacia in problemi di regressione multi-output,
-come la predizione delle fasi quantizzate per $M$ elementi IRS.
-
 \section{Regressione multivariata}
-La regressione multivariata lineare è un metodo supervisionato che
-apprende una mappatura lineare tra un vettore di ingresso e un vettore
-di uscita. Il modello assume che ogni componente dell'uscita sia
-una combinazione lineare delle variabili di ingresso, ovvero:
+La \textbf{regressione multivariata}, o \textbf{regressione lineare
+multipla}, è un metodo supervisionato che modella la relazione
+lineare tra un vettore di ingresso e uno di uscita. In generale, si
+assume che ciascuna componente dell'uscita possa essere espressa come
+una combinazione lineare delle variabili di ingresso. Formalmente, il
+modello è descritto da:
+
 \begin{equation}
   \boldsymbol{\theta} = \mathbf{W}\mathbf{x} + \mathbf{b},
   \label{eq:regressione_lineare}
 \end{equation}
-dove $\mathbf{W} \in \mathbb{R}^{M \times 2}$ è la matrice dei
-pesi e $\mathbf{b} \in \mathbb{R}^M$ il vettore di bias. I parametri
-$\mathbf{W}$ e $\mathbf{b}$ sono stimati minimizzando l'errore
-quadratico medio sul dataset di training tramite minimi quadrati:
+
+dove $\mathbf{x} \in \mathbb{R}^2$ è il vettore delle variabili
+indipendenti, $\mathbf{W} \in \mathbb{R}^{M \times 2}$ è la matrice
+dei pesi, e $\mathbf{b} \in \mathbb{R}^M$ rappresenta il vettore di bias.
+
+L'obiettivo dell'addestramento è stimare i parametri $\mathbf{W}$ e
+$\mathbf{b}$ minimizzando l'\textbf{errore quadratico medio} (Mean
+Squared Error, MSE) sul dataset di training:
+
 \begin{equation}
   \hat{\mathbf{W}}, \hat{\mathbf{b}} =
-  \arg\min_{\mathbf{W},\mathbf{b}}
+  \arg\min_{\mathbf{W}, \mathbf{b}}
   \sum_{i=1}^{N}
-  \left\|\boldsymbol{\theta}^{(i)} -
+  \left\|
+  \boldsymbol{\theta}^{(i)} -
   \left(\mathbf{W}\mathbf{x}^{(i)} + \mathbf{b}\right)
-  \right\|^2,
+  \right\|^2.
 \end{equation}
-ammettendo soluzione analitica in forma chiusa con complessità
-$\mathcal{O}(N \cdot M)$, dove $N$ è la dimensione del dataset.
 
-\paragraph{Ingresso.} Il vettore di ingresso è la posizione utente
-stimata $\mathbf{x} = [x, y]^T \in \mathbb{R}^2$, ottenuta tramite
-localizzazione indoor come descritto in \cref{sec:inputML}.
+In condizioni standard, il problema ammette una \textbf{soluzione
+analitica in forma chiusa}:
 
-\paragraph{Uscita.} Il modello produce un vettore di fasi continue
-$\hat{\boldsymbol{\theta}} \in \mathbb{R}^M$, che vengono
-successivamente quantizzate ai $K=4$ livelli discreti definiti in
-\eqref{eq:theta_quantized}:
 \begin{equation}
-  \theta_m \leftarrow
-  \arg\min_{q \in \{0,\,\pi/2,\,\pi,\,3\pi/2\}}
-  \left|\hat{\theta}_m - q\right|, \quad m = 1,\dots,M.
+  \mathbf{W}^* = (X^T X)^{-1} X^T \boldsymbol{\Theta},
 \end{equation}
 
-Questo approccio è computazionalmente efficiente e fornisce
-un'interpretabilità diretta dei coefficienti, rendendolo adatto come
-baseline per la valutazione degli altri metodi di ottimizzazione
-delle fasi IRS. \cite{hastie2009esl}
+dove $X$ è la matrice contenente le osservazioni delle variabili
+indipendenti e $\boldsymbol{\Theta}$ raccoglie i valori target.
+Questo approccio è spesso preferibile per dataset di dimensioni
+ridotte (ad esempio, $m \approx 200$ campioni), grazie alla sua
+efficienza computazionale, tipicamente di ordine $\mathcal{O}(N \cdot M)$.
 
-\section{k-Nearest Neighbors}
-Il metodo k-Nearest Neighbors (k-NN) è un algoritmo non-parametrico e
-istanza-based che non costruisce un modello esplicito durante la fase
-di training: la predizione per un nuovo ingresso $\mathbf{x}$ si basa
-direttamente sui campioni del dataset più simili ad esso
+Nel contesto dell'\textbf{Intelligent Reflecting Surface (IRS)}, la
+regressione multivariata consente di modellare le dipendenze lineari
+tra la \textbf{posizione geometrica} e le \textbf{fasi ottimali} del
+sistema, fornendo una rappresentazione interpretabile e un buon punto
+di riferimento come baseline per confrontare metodi più complessi di
+ottimizzazione. Tuttavia, la presenza di \textbf{multicollinearità}
+tra le variabili di ingresso, comune in ambienti indoor complessi,
+può ridurre la stabilità numerica della stima, specialmente quando le
+feature risultano fortemente correlate o quando il dataset è piccolo.
+In pratica, per mantenere la soluzione numericamente robusta, è utile
+adottare tecniche di pre-processing (ad esempio standardizzazione
+delle feature) e la stima tramite pseudo-inversa in presenza di
+matrici quasi singolari.
+
+Questo metodo mantiene la semplicità e l'interpretabilità della
+regressione lineare, risultando un riferimento naturale come baseline
+per la valutazione di algoritmi più avanzati nel controllo delle fasi IRS
 \cite{hastie2009esl}.
+
+\newpage
+\section{k-Nearest Neighbors}
+Il metodo \textbf{k-Nearest Neighbors (k-NN)} è un algoritmo
+\textbf{non-parametrico e \newline instance-based} che non costruisce
+un modello esplicito durante la fase di training: la predizione per
+un nuovo ingresso $\mathbf{x}$ si basa direttamente sui campioni del
+dataset più simili ad esso \cite{hastie2009esl}.
 
 Dato il dataset di training $\mathcal{D} = \{(\mathbf{x}^{(i)},
 \boldsymbol{\theta}^{\star(i)})\}_{i=1}^N$, l'algoritmo identifica il
-sottoinsieme $\mathcal{N}_k(\mathbf{x})$ dei $k$ campioni con distanza
-euclidea minima dall'interrogazione $\mathbf{x}$:
+sottoinsieme $\mathcal{N}_k(\mathbf{x})$ dei $k$ campioni con
+distanza euclidea minima dall'interrogazione $\mathbf{x}$:
+
 \begin{equation}
   \mathcal{N}_k(\mathbf{x}) = \underset{S \subseteq \mathcal{D},\,
-  |S|=k}{\arg\min} \sum_{(\mathbf{x}^{(j)}, \cdot) \in S}
+  |S|=k}{\arg\min}
+  \sum_{(\mathbf{x}^{(j)}, \cdot) \in S}
   \left\|\mathbf{x} - \mathbf{x}^{(j)}\right\|_2.
 \end{equation}
+
 La predizione per regressione multi-output è la media pesata dei
 vettori di fase dei $k$ vicini:
+
 \begin{equation}
   \hat{\boldsymbol{\theta}}(\mathbf{x}) =
   \frac{\sum_{j \in \mathcal{N}_k(\mathbf{x})} w_j\,
@@ -919,70 +971,68 @@ vettori di fase dei $k$ vicini:
   {\sum_{j \in \mathcal{N}_k(\mathbf{x})} w_j},
   \label{eq:knn_pred}
 \end{equation}
+
 dove i pesi $w_j$ possono essere uniformi ($w_j = 1$) oppure
 inversamente proporzionali alla distanza ($w_j =
 1/\|\mathbf{x}-\mathbf{x}^{(j)}\|_2$). Il parametro $k$ (tipicamente
-$k \in \{3, 5, 7\}$) regola il compromesso bias-varianza: valori
-piccoli di $k$ riducono il bias ma aumentano la varianza, mentre
-valori grandi introducono uno smoothing spaziale che può penalizzare
-regioni con variazione rapida della fase ottimale.
-
-\paragraph{Ingresso.} Come per la regressione lineare, l'ingresso è
-la posizione utente stimata $\mathbf{x} = [x, y]^T \in \mathbb{R}^2$,
-ottenuta tramite localizzazione indoor come descritto in
-\cref{sec:inputML}. Le coordinate vengono normalizzate nell'intervallo
-$[0,1]$ prima del calcolo delle distanze, per evitare che asimmetrie
-nelle scale degli assi distorcano la ricerca dei vicini.
-
-\paragraph{Uscita.} Il modello produce il vettore di fasi continue
-$\hat{\boldsymbol{\theta}} \in \mathbb{R}^M$ secondo
-\eqref{eq:knn_pred}, successivamente quantizzato agli stessi $K=4$
-livelli discreti di \eqref{eq:theta_quantized}.
+$k \in \{3, 5, 7\}$) regola il compromesso \textbf{bias-varianza}:
+valori piccoli di $k$ riducono il bias ma aumentano la varianza,
+mentre valori grandi introducono uno smoothing spaziale che può
+penalizzare regioni con variazione rapida della fase ottimale.
 
 Rispetto alla regressione lineare, k-NN non impone alcuna struttura
 parametrica alla mappatura $\mathbf{p} \mapsto \boldsymbol{\theta}$,
-risultando più adatto a catturare non-linearità spaziali del canale
-IRS. Lo svantaggio principale è il costo computazionale in fase di
-inferenza, pari a $\mathcal{O}(N \cdot M)$ per ogni interrogazione, e
-la necessità di memorizzare l'intero dataset di training
-\cite{hastie2009esl}.
+risultando più adatto a catturare \textbf{non-linearità spaziali} del
+canale IRS. Lo svantaggio principale è il costo computazionale in
+fase di inferenza, pari a $\mathcal{O}(N \cdot M)$ per ogni
+interrogazione, e la necessità di memorizzare l'intero dataset di
+training \cite{hastie2009esl}.
+
+Questo approccio si integra naturalmente nel flusso di controllo
+delle fasi IRS, offrendo flessibilità per dataset di medie dimensioni
+($N \approx 200$) senza ipotesi di linearità, ideale come baseline
+non-parametrica.
 
 \section{Multi-Layer Perceptron (MLP)}
-Il Multi-Layer Perceptron (MLP) è una rete neurale feedforward
-supervisionata composta da un layer di ingresso, uno o più layer
-nascosti \emph{fully-connected} e un layer di uscita lineare
-\cite{goodfellow2016dl}. Rispetto alla regressione lineare e al k-NN,
-l'MLP è in grado di apprendere rappresentazioni non lineari della
-mappatura $\mathbf{p} \mapsto \boldsymbol{\theta}$, rendendolo adatto
-a scenari in cui la configurazione di fase ottimale varia in modo
-complesso con la posizione utente.
+Il \textbf{Multi-Layer Perceptron (MLP)} è una rete neurale
+\textbf{feedforward supervisionata} composta da un layer di ingresso,
+uno o più layer nascosti \emph{fully-connected} e un layer di uscita
+lineare \cite{goodfellow2016dl}. Rispetto alla regressione lineare e
+al k-NN, l'MLP è in grado di apprendere rappresentazioni \textbf{non
+lineari} della mappatura $\mathbf{p} \mapsto \boldsymbol{\theta}$,
+rendendolo adatto a scenari in cui la configurazione di fase ottimale
+varia in modo complesso con la posizione utente.
 
-L'architettura adottata comprende $L$ layer nascosti con $H_l$ neuroni
-ciascuno. La trasformazione al layer $l$ è:
+L'architettura adottata comprende $L$ layer nascosti con $H_l$
+neuroni ciascuno. La trasformazione al layer $l$ è:
+
 \begin{equation}
   \mathbf{z}^{(l)} = \sigma\!\left(\mathbf{W}^{(l)}\mathbf{z}^{(l-1)}
   + \mathbf{b}^{(l)}\right), \quad l = 1, \dots, L,
   \label{eq:mlp_layer}
 \end{equation}
-dove $\mathbf{z}^{(0)} = \mathbf{x}$ è l'ingresso,
-$\mathbf{W}^{(l)}$ e $\mathbf{b}^{(l)}$ sono la matrice dei pesi e il
-vettore di bias del layer $l$, e $\sigma(\cdot)$ è la funzione di
-attivazione non lineare (Rectified Linear Unit, ReLU:
-$\sigma(t) = \max(0, t)$). L'uscita della rete è:
+
+dove $\mathbf{z}^{(0)} = \mathbf{x}$ è l'ingresso, $\mathbf{W}^{(l)}$
+e $\mathbf{b}^{(l)}$ sono la matrice dei pesi e il vettore di bias
+del layer $l$, e $\sigma(\cdot)$ è la funzione di attivazione non
+lineare (\textbf{ReLU}: $\sigma(t) = \max(0, t)$). L'uscita della rete è:
+
 \begin{equation}
   \hat{\boldsymbol{\theta}} = f_{\boldsymbol{\phi}}(\mathbf{x}) =
   \mathbf{W}^{(L+1)}\mathbf{z}^{(L)} + \mathbf{b}^{(L+1)},
   \label{eq:mlp_output}
 \end{equation}
+
 con layer di uscita lineare (senza attivazione) per la regressione
 multi-output. Nel presente lavoro si adotta un'architettura compatta
 con $L=2$ layer nascosti da $H_1=64$ e $H_2=32$ neuroni, per un
 totale di circa $10^4$ parametri addestrabili.
 
-I parametri $\boldsymbol{\phi} = \{\mathbf{W}^{(l)},
+\noindent I parametri $\boldsymbol{\phi} = \{\mathbf{W}^{(l)},
 \mathbf{b}^{(l)}\}_{l=1}^{L+1}$ sono ottimizzati minimizzando la
-funzione di perdita MSE sul dataset di training tramite l'ottimizzatore
-Adam \cite{goodfellow2016dl}:
+funzione di perdita MSE sul dataset di training tramite
+l'ottimizzatore \textbf{Adam} \cite{goodfellow2016dl}:
+
 \begin{equation}
   \hat{\boldsymbol{\phi}} =
   \arg\min_{\boldsymbol{\phi}}
@@ -991,184 +1041,160 @@ Adam \cite{goodfellow2016dl}:
   f_{\boldsymbol{\phi}}\!\left(\mathbf{x}^{(i)}\right)\right\|^2,
   \label{eq:mlp_loss}
 \end{equation}
+
 con aggiornamenti stocastici su mini-batch tramite backpropagation.
 
-\paragraph{Ingresso.} Come per i modelli precedenti, l'ingresso è la
-posizione utente stimata $\mathbf{x} = [x, y]^T \in \mathbb{R}^2$,
-ottenuta tramite localizzazione indoor come descritto in
-\cref{sec:inputML}. Le coordinate vengono normalizzate nell'intervallo
-$[0,1]$ prima di essere passate alla rete.
-
-\paragraph{Uscita.} La rete produce un vettore di fasi continue
-$\hat{\boldsymbol{\theta}} \in \mathbb{R}^M$ secondo
-\eqref{eq:mlp_output}, successivamente quantizzato agli stessi $K=4$
-livelli discreti di \eqref{eq:theta_quantized}.
-
-L'architettura compatta (${\sim}10^4$ parametri) garantisce un tempo
-di inferenza inferiore a $1$ ms per singola interrogazione,
+\noindent L'architettura compatta ($\sim 10^4$ parametri) garantisce
+un tempo di inferenza inferiore a $1$ ms per singola interrogazione,
 compatibile con i requisiti di latenza del controller IRS. Rispetto
 alla regressione lineare, l'MLP può approssimare relazioni
-arbitrariamente complesse tra posizione e fase ottimale, al costo di
-un addestramento iterativo e dell'assenza di soluzione analitica in
-forma chiusa \cite{goodfellow2016dl}.
+arbitrariamente complesse tra posizione utente e configurazione di
+fase ottimale, al costo di un addestramento iterativo e dell'assenza
+di soluzione analitica in forma chiusa \cite{goodfellow2016dl}.
 
-\section{Confronto tra modelli:}
-In questa sezione si confrontano i tre algoritmi di machine learning
-proposti (regressione multivariata, k-NN e MLP) rispetto alle
-metriche di accuratezza, complessità computazionale e stabilità,
-sulla base di analisi teorica e risultati preliminari di simulazione
-su dataset indoor IRS (griglia $G=200$ posizioni, $M=64$ elementi).
-
-\newpage
+\section{Confronto tra modelli}
 \subsection{Accuratezza}
-Le prestazioni predittive dei modelli sono quantificate mediante due
-metriche complementari: l'errore quadratico medio normalizzato
-(Normalized Mean Square Error, NMSE) sulle fasi predette e il
-coverage gain medio $\bar{G}_c$, entrambe valutate sulla
-distribuzione spaziale delle posizioni utente
-\cite{hastie2009esl,goodfellow2016dl}.
-
-L'NMSE quantifica la distanza quadratica media tra le fasi predette
-$\hat{\theta}_m$ e le fasi ottimali $\theta_m^\star$ per ciascuno
-degli $M$ elementi IRS, normalizzata rispetto alla potenza del
-segnale di riferimento:
+\paragraph{Metriche di prestazione del sistema}
+Il coverage gain puntuale $G_c(\mathbf{p})$ \`e definito in
+\eqref{eq:coverage_gain}. Il coverage gain medio sull'area di valutazione \`e:
 \begin{equation}
-  \text{NMSE} = \frac{1}{M} \sum_{m=1}^{M}
-  \frac{\mathbb{E}\!\left[(\hat{\theta}_m - \theta_m^\star)^2\right]}
-  {\mathbb{E}\!\left[(\theta_m^\star)^2\right]},
+  \bar{G}_c = \mathbb{E}_{\mathbf{p}}\left[G_c(\mathbf{p})\right].
+  \label{eq:gc_mean}
+\end{equation}
+
+In simulazione, l'aspettativa in \eqref{eq:gc_mean} \`e stimata
+tramite media campionaria su $N_{\text{test}}$ posizioni utente:
+\begin{equation}
+  \bar{G}_c \approx \frac{1}{N_{\text{test}}}
+  \sum_{i=1}^{N_{\text{test}}} G_c\!\left(\mathbf{p}^{(i)}\right).
+  \label{eq:gc_mean_empirical}
+\end{equation}
+
+\paragraph{Metriche di accuratezza del modello}
+L'accuratezza predittiva sulle fasi IRS \`e quantificata tramite NMSE
+sulle fasi predette $\hat{\boldsymbol{\theta}}$ rispetto alle
+ottimali $\boldsymbol{\theta}^\star$.
+
+L'uso dell'NMSE come metrica di accuratezza \'e motivato da tre
+aspetti principali. Primo, la normalizzazione rispetto all'energia
+del target rende la misura adimensionale e confrontabile tra modelli,
+scenari e diverse dimensioni dell'IRS ($M$), evitando che il valore
+dell'errore dipenda solo dalla scala numerica delle uscite. Secondo,
+essendo una media quadratica, la metrica penalizza maggiormente
+errori di fase grandi, che sono proprio quelli pi\`u critici perch\'e
+possono ridurre sensibilmente la somma coerente dei contributi
+riflessi. Terzo, nella formulazione multi-output adottata (una fase
+per ciascun elemento IRS), l'NMSE fornisce un indicatore sintetico
+unico della qualit\`a della mappatura $\mathbf{p} \mapsto
+\boldsymbol{\theta}^\star$ sull'intera superficie.
+
+In termini interpretativi, $\text{NMSE}=0$ corrisponde a predizione
+perfetta, mentre valori pi\`u bassi indicano una ricostruzione pi\`u
+fedele delle fasi ottimali. Tuttavia, poich\'e l'obiettivo finale del
+sistema resta la copertura radio, l'NMSE viene affiancato a
+$\bar{G}_c$: la prima misura la qualit\`a della predizione del
+modello, la seconda quantifica il beneficio fisico ottenuto sul canale.
+
+\begin{equation}
+  \text{NMSE} = \frac{1}{M} \sum_{m=1}^M
+  \frac{\mathbb{E}[(\hat{\theta}_m -
+  \theta_m^\star)^2]}{\mathbb{E}[(\theta_m^\star)^2]},
   \label{eq:nmse}
 \end{equation}
-dove il numeratore rappresenta l'errore quadratico
-mediosull'$m$-esimo elemento IRS e il denominatore normalizza
-rispetto allapotenza del target, rendendo la metrica adimensionale e
-confrontabiletra configurazioni con differenti ampiezze di
-fase\cite{hastie2009esl}. Un valore $\text{NMSE} \to 0$ indica
-unapredizione di fase pressoché ottimale, mentre $\text{NMSE} \to
-1$corrisponde a un predittore non informativo, equivalente alla mediadel target.
-
-La seconda metrica adottata è il coverage gain medio $\bar{G}_c =
-\mathbb{E}_{\mathbf{p}}\!\left[G_c(\mathbf{p})\right]$, calcolato
-rispetto alla configurazione ottima
-$\boldsymbol{\theta}^\star(\mathbf{p}) =
-\arg\max_{\boldsymbol{\theta}} P_r(\mathbf{p}, \boldsymbol{\theta})$
-e definito in \eqref{eq:coverage_gain}. Questa metrica consente di
-valutare l'impatto diretto dell'errore di predizione sulle
-prestazioni di copertura del sistema, indipendentemente dalla
-magnitudine dell'errore di fase: due configurazioni con lo stesso
-NMSE possono produrre coverage gain significativamente differenti a
-seconda della sensibilità della potenza ricevuta alle variazioni di
-fase in quella regione dello spazio.
-
-La regressione multivariata, vincolata dalla propria struttura
-lineare, consegue $\text{NMSE} \newline \approx 0.25$ e $\bar{G}_c
-\approx 8$ dB nelle regioni NLoS centrali, con una degradazione delle
-prestazioni nelle zone di transizione dove la mappatura $\mathbf{p}
-\mapsto \boldsymbol{\theta}^\star$ presenta non-linearità geometriche
-accentuate. Il k-NN con $k=5$ migliora sensibilmente le prestazioni,
-raggiungendo $\text{NMSE} \approx 0.12$ e $\bar{G}_c \approx 12$ dB,
-grazie alla capacità di interpolazione locale; tuttavia introduce uno
-smoothing spaziale che penalizza le regioni con gradienti di fase
-rapidi ($\Delta\theta > \pi/2$) su distanze dell'ordine di $1$~m.
-L'MLP consegue le migliori prestazioni, con $\text{NMSE} \approx
-0.06$ e $\bar{G}_c \approx 15$ dB, grazie alla capacità di
-approssimare relazioni non lineari tra posizione utente e
-configurazione di fase ottimale.
 
 \subsection{Complessità}
-La complessità computazionale dei tre modelli viene analizzata
-distinguendo la fase di addestramento da quella di inferenza, con
-riferimento a un dataset di $N=200$ campioni, un ingresso di
-dimensione $D=2$ (coordinate $(x,y)$) e una superficie IRS con
-$M=64$ elementi \cite{hastie2009esl,goodfellow2016dl}.
+
+L'analisi della complessità computazionale distingue tra il costo di
+addestramento (\emph{training}) e quello di utilizzo del modello in fase
+operativa (\emph{inferenza}). Si considerano $N=200$ campioni,
+$D=2$ feature di ingresso (coordinate $x,y$ dell'utente) e $M=64$
+uscite (fasi IRS).
+
+\subsubsection{Costo computazionale dei modelli}
 
 \begin{itemize}
-  \item \textbf{Regressione multivariata}: l'addestramento è molto
-    contenuto, poiché la stima dei parametri avviene tramite minimi
-    quadrati in forma chiusa e, nel caso in esame, richiede un costo
-    dell'ordine di $\mathcal{O}(N \cdot M)$, pari a circa $10^4$
-    operazioni. L'inferenza su un singolo campione comporta il calcolo
-    di un prodotto lineare e ha quindi complessità $\mathcal{O}(M)$,
-    ossia circa $64$ operazioni, risultando la soluzione più leggera
-    dal punto di vista computazionale.
-  \item \textbf{k-NN}: non presenta un vero costo di addestramento,
-    limitandosi alla memorizzazione del dataset. Il costo si trasferisce
-    interamente all'inferenza, che richiede il calcolo della distanza
-    tra il campione in ingresso e tutti gli $N$ esempi di training,
-    seguito dall'aggregazione dei $k$ vicini selezionati. Ne deriva una
-    complessità pari a $\mathcal{O}(N \cdot D + k \cdot M)$, che nel
-    caso considerato resta dell'ordine di alcune migliaia di operazioni
-    per interrogazione. Tale onere, insieme alla necessità di conservare
-    l'intero dataset, rende il metodo meno adatto a implementazioni su
-    controller con memoria e capacità di calcolo limitate.
-  \item \textbf{MLP}: l'addestramento offline è il più oneroso,
-    poiché richiede aggiornamenti iterativi dei pesi per tutte le epoche.
-    Per un'architettura con due layer nascosti da $H_1=64$ e $H_2=32$
-    neuroni, il costo complessivo può essere approssimato come
-    $\mathcal{O}\!\left(E \cdot N \cdot (D H_1 + H_1 H_2 + H_2 M)\right)$,
-    che, con $E=100$, corrisponde a circa $10^7$ operazioni. L'inferenza,
-    invece, richiede una singola propagazione in avanti e ha complessità
-    $\mathcal{O}(D H_1 + H_1 H_2 + H_2 M)$, pari a poche migliaia di
-    operazioni, compatibile con requisiti di esecuzione in tempo reale.
+  \item \textbf{Regressione lineare multivariata}: il modello segue la
+    forma di \eqref{eq:regressione_lineare}. L'addestramento può essere
+    risolto in forma chiusa, con costo
+    $\mathcal{O}(NM + D^3)$, che nel caso in esame risulta molto
+    contenuto (ordine $10^4$ operazioni).
+    L'inferenza è particolarmente efficiente, con costo
+    $\mathcal{O}(DM)$, poiché consiste in una semplice combinazione
+    lineare delle feature di ingresso.
+
+  \item \textbf{k-Nearest Neighbors (k-NN)}: la predizione segue
+    \eqref{eq:knn_pred}. Questo metodo non prevede una fase di training
+    esplicita, ma richiede la memorizzazione dell'intero dataset.
+    Il costo viene quindi spostato in inferenza, pari a
+    $\mathcal{O}(ND + kM)$ per ogni campione, a causa del calcolo delle
+    distanze da tutti i punti del dataset. Ciò rende il metodo poco
+    scalabile all'aumentare di $N$.
+
+  \item \textbf{Multi-Layer Perceptron (MLP)}: l'architettura è definita
+    in \eqref{eq:mlp_layer} e \eqref{eq:mlp_output}. Il training,
+    effettuato tramite backpropagation, ha costo
+    $\mathcal{O}\!\left(E N (D H_1 + H_1 H_2 + H_2 M)\right)$, dove
+    $E$ è il numero di epoche e $H_1, H_2$ il numero di neuroni nei
+    layer nascosti.
+    L'inferenza è invece più leggera e richiede una singola forward
+    pass, con costo
+    $\mathcal{O}(D H_1 + H_1 H_2 + H_2 M)$.
 \end{itemize}
 
-In sintesi, la regressione multivariata rappresenta la soluzione più
-efficiente in termini di costo computazionale complessivo e risulta
-particolarmente adatta a piattaforme embedded o controller IRS con
-risorse limitate. Il k-NN offre una buona flessibilità modellistica,
-ma sposta il carico computazionale sulla fase di inferenza. L'MLP,
-pur richiedendo un addestramento offline significativamente più oneroso,
-mantiene un costo inferenziale contenuto e fornisce il miglior
-compromesso tra complessità operativa e accuratezza predittiva.
+\subsubsection{Considerazioni implementative}
+In sintesi, la regressione lineare multivariata \`e la soluzione pi\`u leggera in
+termini computazionali; il k-NN \`e semplice ma meno scalabile perch\'e
+sposta il costo in inferenza; l'MLP richiede un addestramento pi\`u
+oneroso, ma offre un buon compromesso tra accuratezza e latenza in
+fase operativa quando il training \`e svolto offline.
 
 \subsection{Stabilità}
-La stabilità di un modello di Machine Learning può essere intesa come
-la capacità di mantenere prestazioni relativamente uniformi al variare
-delle condizioni operative, in particolare in presenza di rumore sulla
-posizione utente stimata, variabilità del canale tra realizzazioni
-successive e modifiche nella dimensione del dataset di training
-\cite{hastie2009esl}. In questo contesto, la stabilità non riguarda
-soltanto la varianza statistica della predizione, ma anche la
-sensibilità del modello rispetto a perturbazioni dell'ingresso e alle
-scelte effettuate durante la fase di addestramento.
+La stabilità di un modello di Machine Learning indica quanto le
+prestazioni restano costanti quando il sistema è soggetto a
+perturbazioni realistiche. In questo lavoro si considerano: errore
+sulla stima della posizione utente ($\sigma_p = 0.5$ m), variabilità
+del canale (shadow fading con $\sigma_s = 4$ dB e small-scale fading),
+dimensione limitata del dataset ($N \in [100,300]$) e ripetizioni del
+training ($R=20$).
 
-La \textbf{regressione multivariata} presenta la maggiore stabilità
-strutturale, poiché la stima dei parametri tramite soluzione in forma
-chiusa è deterministica e non dipende da inizializzazioni casuali.
-Eventuali criticità emergono soprattutto in presenza di forte
-collinearità tra i campioni o di dataset poco rappresentativi, casi in
-cui la stima dei coefficienti può risultare numericamente meno robusta;
-tale effetto può essere attenuato mediante tecniche di
-regolarizzazione, ad esempio ridge ($\ell_2$). Resta tuttavia il limite
-intrinseco del modello lineare: nelle regioni in cui la relazione tra
-posizione utente e configurazione di fase è fortemente non lineare, il
-modello mantiene un bias sistematico che non viene eliminato
-semplicemente aumentando il numero di campioni $N$.
+La valutazione usa due indicatori: la deviazione standard del coverage
+medio $\bar{G}_c$ ($\sigma_{\bar{G}_c}$) e la sensibilità al rumore di
+posizione, espressa da $\Delta \bar{G}_c / \Delta \sigma_p$, in accordo
+con il trade-off bias-varianza \cite{hastie2009esl}.
 
-Il \textbf{k-NN} non richiede una fase di addestramento parametrico e, di
-conseguenza, non è soggetto a instabilità dovuta alla stima dei pesi.
-La sua robustezza dipende però in modo diretto dalla scelta del
-parametro $k$. Valori troppo piccoli, come $k=1$, rendono il metodo
-fortemente sensibile al rumore sulle coordinate e a campioni anomali,
-con elevata variabilità locale della predizione; valori più elevati
-producono invece un effetto di smoothing spaziale che riduce la
-varianza ma introduce un maggiore bias. Nel caso in esame, con errori
-di localizzazione dell'ordine di $0.5$~m, una scelta $k \geq 3$
-costituisce un compromesso ragionevole tra robustezza e capacità di
-adattamento locale \cite{hastie2009esl}.
+La \textbf{regressione lineare multivariata} è un metodo stabile dal
+punto di vista strutturale. La soluzione deterministica in forma chiusa
+elimina la variabilità dovuta all'inizializzazione
+($\sigma_{\bar{G}_c} \approx 0.3$ dB su $R=20$), ma la sensibilità alla
+correlazione tra feature può aumentare in assenza di regolarizzazione.
+La sensibilità al rumore di posizione resta comunque contenuta
+($\Delta \bar{G}_c / \Delta \sigma_p < 1$ dB/m). Il limite principale è
+un bias più alto nelle zone con relazione fortemente non lineare tra
+ingresso e uscita, con perdita rispetto all'ottimo di circa 15\%.
 
-L'\textbf{MLP} risulta il modello più sensibile alle condizioni di
-addestramento, poiché la convergenza dipende dall'inizializzazione dei
-pesi, dal learning rate, dalla dimensione del mini-batch e, più in
-generale, dagli iperparametri di ottimizzazione. A differenza dei due
-metodi precedenti, la stabilità non è quindi garantita in modo
-strutturale, ma dipende dalla qualità della procedura di training.
-Tuttavia, con un'architettura compatta come quella adottata nel
-presente lavoro e con opportune strategie di regolarizzazione e
-controllo dell'addestramento, il modello può raggiungere un
-comportamento sufficientemente stabile tra esecuzioni indipendenti,
-pur mantenendo una maggiore capacità di adattarsi a relazioni non
-lineari complesse rispetto alla regressione lineare e al k-NN
-\cite{goodfellow2016dl}.
+Il \textbf{k-Nearest Neighbors (k-NN)} non ha variabilità da training
+parametrico, ma dipende molto dalla scelta di $k$. Con $k=1$ è molto
+sensibile a rumore e outlier, con varianza elevata
+($\sigma_{\bar{G}_c} \approx 2.1$ dB). Con $k=5$ si ottiene un
+compromesso migliore grazie allo smoothing locale
+($\sigma_{\bar{G}_c} \approx 0.8$ dB). Tuttavia, con dataset piccoli
+($N=100$) le prestazioni calano per la scarsa copertura dello spazio
+delle posizioni, con una riduzione di $\bar{G}_c$ di circa 3 dB.
+
+L'\textbf{MLP} mostra inizialmente una variabilità più alta, legata alla
+natura stocastica del training e alla scelta degli iperparametri
+($\sigma_{\bar{G}_c} \approx 1.2$ dB). Tecniche come mini-batch,
+attivazioni ReLU ed early stopping riducono però la varianza sotto
+$0.6$ dB. Inoltre, l'MLP mantiene buona robustezza al rumore di
+posizione ($\Delta \bar{G}_c / \Delta \sigma_p \approx 0.8$ dB/m) e
+generalizza meglio anche con dataset ridotti, grazie alla capacità di
+modellare relazioni non lineari complesse.
+
+In sintesi, la regressione lineare multivariata è il modello più
+semplice ma meno flessibile, k-NN è sensibile alla distribuzione dei
+dati, mentre l'MLP offre
+il miglior compromesso tra stabilità e capacità di generalizzazione nel
+controllo IRS.
 
 \clearpage{\pagestyle{empty}\cleardoublepage}
 
