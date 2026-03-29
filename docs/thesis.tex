@@ -1196,6 +1196,75 @@ dati, mentre l'MLP offre
 il miglior compromesso tra stabilità e capacità di generalizzazione nel
 controllo IRS.
 
+\chapter{Processo di addestramento}
+\label{chap:addestramento}
+
+\section{Generazione dataset sintetico}
+Il dataset è stato generato tramite simulazione parametrica ed è composto da coppie ingresso--uscita del tipo
+\begin{equation}
+  \mathcal{D}=\{(\mathbf{p}^{(i)},\boldsymbol{\theta}^{(i)})\}_{i=1}^{N},
+  \qquad
+  \mathbf{p}^{(i)}=[x^{(i)},y^{(i)}]^T,
+  \quad
+  \boldsymbol{\theta}^{(i)}\in\mathbb{R}^{M}.
+\end{equation}
+La posizione dell'utente rappresenta l'ingresso del modello, mentre il vettore di fasi IRS costituisce l'etichetta da apprendere.
+
+Gli elementi dell'IRS sono disposti su una griglia \texttt{size}$\times$\texttt{size}, con $M=\texttt{size}^2$, centrata in prossimità di $(9,4,1.5)$ m. Le posizioni dell'utente sono campionate uniformemente nell'area $x\in[1,8]$, $y\in[1,7]$, con quota fissata a $z=1$ m.
+
+Per ciascun campione si costruiscono canali complessi semplificati: il canale BS--IRS ha ampiezza costante e fase casuale, mentre il canale IRS--UE dipende dalla distanza elemento--utente tramite un termine attenuativo del tipo $\exp(-d/10)$, anch'esso con fase casuale. Questa scelta permette di ottenere una variazione regolare del canale con la distanza, mantenendo il modello semplice e numericamente stabile.
+
+La fase ottima per ciascun elemento viene inizialmente calcolata in forma continua come
+\begin{equation}
+  \theta_m^{\text{cont}}=-\angle\!\left(h_{\mathrm{IU},m}^{*}h_{\mathrm{BI},m}\right),
+\end{equation}
+in modo da allineare i contributi riflessi e massimizzare la somma coerente al ricevitore. Le fasi ottenute vengono poi quantizzate su $K$ livelli uniformi in $[0,2\pi)$, coerentemente con i vincoli hardware dell'IRS. In forma esplicita, la quantizzazione del singolo elemento è definita come
+\begin{equation}
+  \theta_m^{\text{quant}}=
+  \arg\min_{q\in\mathcal{Q}_K}
+  d_{\mathbb{S}^1}(\theta_m^{\text{cont}},q),
+  \qquad
+  \mathcal{Q}_K=\left\{0,\frac{2\pi}{K},\dots,\frac{2\pi(K-1)}{K}\right\},
+\end{equation}
+dove $d_{\mathbb{S}^1}(a,b)=\min\{|a-b|,2\pi-|a-b|\}$ è la distanza angolare su circonferenza unitaria.
+
+Nelle simulazioni sono stati adottati $K=4$, \texttt{size}=8, quindi $M=64$, e $N=2000$ campioni, successivamente suddivisi in training e test con rapporto 80/20.
+
+\section{Suddivisione training / validation / test}
+La suddivisione del dataset segue una strategia hold-out con rapporto 80/20 tra training e test, in coerenza con l'implementazione sperimentale. Indicando con $N$ il numero totale di campioni, si definiscono
+\begin{equation}
+  N_{\mathrm{tr}}=\lfloor 0.8N \rfloor,
+  \qquad
+  N_{\mathrm{te}}=N-N_{\mathrm{tr}}.
+\end{equation}
+Nel caso considerato ($N=2000$), si ottengono $N_{\mathrm{tr}}=1600$ campioni per l'addestramento e $N_{\mathrm{te}}=400$ campioni per la valutazione finale.
+
+Poiché le posizioni utente sono generate in modo casuale e indipendente, i due sottoinsiemi risultano campioni i.i.d. della medesima distribuzione sintetica. In questa fase non è stato introdotto un validation set separato: il confronto tra modelli è stato condotto a iperparametri fissati, privilegiando la comparabilità diretta delle prestazioni sul medesimo test set.
+
+\section{Metriche di apprendimento}
+La metrica primaria adottata per l'accuratezza di regressione è la \emph{Normalized Mean Squared Error} (NMSE), calcolata tra vettori di fase target e predetti:
+\begin{equation}
+  \mathrm{NMSE}=\frac{\mathbb{E}\!\left[\|\boldsymbol{\theta}-\hat{\boldsymbol{\theta}}\|_2^2\right]}{\mathbb{E}\!\left[\|\boldsymbol{\theta}\|_2^2\right]}.
+\end{equation}
+Valori inferiori di NMSE indicano maggiore fedeltà nella ricostruzione del profilo di fase.
+
+Accanto alla NMSE sono state utilizzate metriche discrete legate ai livelli di quantizzazione: \emph{Tracking@1} (quota di elementi per cui il livello predetto coincide con quello target) e \emph{Tracking@2} (quota di elementi per cui il livello target rientra nei due livelli più vicini alla predizione). La mappatura ai livelli discreti è effettuata con distanza angolare circolare, così da rispettare la periodicità della fase.
+
+È stata inoltre misurata la \emph{Phase Mean Absolute Error} in gradi,
+\begin{equation}
+  \mathrm{MAE}_{\phi}=\mathbb{E}\!\left[\left|\operatorname{wrap}_{[-\pi,\pi)}(\hat{\theta}-\theta)\right|\right],
+\end{equation}
+utile per quantificare l'errore medio angolare in termini fisicamente interpretabili. Come indicatore computazionale è stato infine riportato il tempo di addestramento per ciascun modello.
+
+Nell'analisi avanzata sono state aggiunte: (i) sensibilità a diversi livelli di quantizzazione $K\in\{2,4,8\}$; (ii) confronto con baseline casuale pari a $1/K$ per Tracking@1; (iii) CDF dell'errore di fase; (iv) tracking per zone di distanza utente (near/mid/far).
+
+\section{Overfitting e generalizzazione}
+Il rischio di overfitting è particolarmente rilevante per modelli più flessibili (in particolare MLP) e in presenza di etichette ad alta dimensionalità ($M=64$). Per contenerlo, l'analisi adotta una valutazione su campioni non visti (test hold-out) e, nel caso MLP, una standardizzazione calcolata esclusivamente sul training set, evitando leakage informativo verso il test set.
+
+La generalizzazione è stata verificata lungo tre direttrici complementari. In primo luogo, il confronto delle prestazioni sul test set rispetto al training set permette di identificare eventuali scostamenti sistematici. In secondo luogo, la robustezza rispetto alla quantizzazione ($K=2,4,8$) valuta la stabilità del mapping appreso al variare della granularità della decisione. In terzo luogo, l'analisi per zone di distanza utente e la CDF dell'errore di fase consentono di osservare possibili degradazioni locali o code d'errore elevate.
+
+Resta comunque un limite metodologico: non essendo presente un validation set dedicato (né una cross-validation), la stima della capacità di generalizzazione è riferita alla distribuzione sintetica considerata. Pertanto, eventuali estensioni future dovranno includere scenari di canale più eterogenei e protocolli di validazione multipla per aumentare la robustezza inferenziale.
+
 \clearpage{\pagestyle{empty}\cleardoublepage}
 
 \chapter*{Ringraziamenti}
