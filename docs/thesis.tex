@@ -1303,6 +1303,37 @@ Infine, va sottolineato che il modello adottato è volutamente semplificato: si 
 
 In conclusione, il capitolo evidenzia che l'integrazione tra IRS e Machine Learning è promettente e coerente con gli obiettivi della tesi, ma richiede ulteriori estensioni per affrontare scenari più complessi e applicazioni su scala reale.
 
+\chapter{Conclusioni e sviluppi futuri}
+\label{chap:conclusioni}
+
+\section{Risultati principali}
+Nel presente lavoro è stato analizzato il problema del controllo delle fasi di una Intelligent Reflecting Surface (IRS) in uno scenario indoor NLoS, con l'obiettivo di migliorare la copertura radio e la potenza ricevuta da un utente mobile. A partire dalla modellazione del canale assistito da IRS, è stato definito un quadro teorico e operativo che ha permesso di formulare il problema come una mappatura tra la posizione dell'utente e la configurazione ottimale delle fasi della superficie riflettente.
+
+L'analisi ha mostrato che l'introduzione dell'IRS può fornire un contributo significativo al miglioramento delle prestazioni del sistema, soprattutto in ambienti in cui il collegamento diretto BS--UE risulta attenuato o fortemente compromesso dalla presenza di ostacoli. In particolare, il controllo delle fasi tramite tecniche di Machine Learning ha consentito di approssimare in modo efficace la soluzione ottima, riducendo la complessità computazionale rispetto a un approccio puramente iterativo o esaustivo.
+
+Tra i modelli considerati, le soluzioni più semplici hanno offerto un buon compromesso tra interpretabilità e costo computazionale, mentre modelli più flessibili, come l'MLP, hanno mostrato una maggiore capacità di catturare relazioni non lineari tra la posizione dell'utente e la configurazione ottimale della superficie. Nel complesso, i risultati confermano che l'integrazione tra IRS e Machine Learning rappresenta una strategia promettente per scenari indoor dinamici e caratterizzati da copertura non uniforme.
+
+\section{Limiti del lavoro}
+Nonostante i risultati incoraggianti, il lavoro presenta alcune limitazioni che è opportuno evidenziare. In primo luogo, lo scenario considerato è volutamente semplificato: si è assunto un contesto a utente singolo, quasi-statico e con una superficie IRS idealizzata, senza modellare in modo esplicito guasti, latenza di controllo o imperfezioni hardware più realistiche. Questa scelta ha permesso di isolare il contributo del beamforming passivo, ma limita la generalizzabilità immediata dei risultati a scenari reali più complessi.
+
+Un secondo limite riguarda la qualità delle informazioni di ingresso al modello. L'approccio basato sulla posizione dell'utente è efficace dal punto di vista computazionale, ma dipende dalla precisione del sistema di localizzazione indoor. Errori di stima della posizione possono tradursi in configurazioni di fase subottimali e in una riduzione del guadagno complessivo. Inoltre, la robustezza del modello dipende fortemente dalla distribuzione dei dati sintetici utilizzati in fase di addestramento e dalla fedeltà del simulatore rispetto a un ambiente fisico reale.
+
+Un'ulteriore limitazione è legata alla quantizzazione delle fasi IRS. Sebbene l'adozione di un numero ridotto di livelli sia coerente con i vincoli hardware, essa introduce inevitabilmente una perdita prestazionale rispetto al caso continuo. Di conseguenza, il risultato ottenuto rappresenta un compromesso tra efficienza implementativa e qualità del beamforming passivo.
+
+\section{Sviluppi futuri}
+Diversi possibili sviluppi futuri possono estendere e rafforzare il lavoro presentato. Una prima direzione riguarda l'introduzione di scenari multiutente, nei quali la configurazione delle fasi IRS deve tenere conto di richieste potenzialmente conflittuali e di metriche di ottimizzazione più articolate, come il bilanciamento della qualità del servizio tra utenti diversi o la massimizzazione della somma delle capacità.
+
+Un secondo sviluppo consiste nell'introduzione della dinamica temporale esplicita del canale e del movimento dell'utente. In questo caso, il problema potrebbe essere affrontato con tecniche di Reinforcement Learning più evolute, capaci di apprendere policy adattive nel tempo e di reagire a variazioni del contesto radio in modo più efficace rispetto a un modello statico.
+
+Un'altra estensione importante riguarda l'uso di dataset più realistici e di ambienti di simulazione più complessi, in cui siano presenti più ostacoli, materiali differenti, mobili e condizioni di propagazione variabili. In tali scenari, potrebbe risultare utile integrare il Machine Learning con tecniche di ottimizzazione classica o con modelli ibridi physics-informed, al fine di combinare interpretabilità, accuratezza e robustezza.
+
+Infine, un'evoluzione naturale del lavoro sarebbe la validazione sperimentale su piattaforme reali o testbed dedicati, per verificare in condizioni operative la bontà delle ipotesi adottate nel modello. Questo passaggio consentirebbe di valutare meglio gli effetti di rumore, ritardi di controllo, non idealità hardware e incertezza di localizzazione, fornendo un quadro più completo delle potenzialità delle IRS nelle reti wireless di nuova generazione.
+
+\section{Considerazioni finali}
+Le Intelligent Reflecting Surfaces rappresentano una tecnologia molto promettente per la riconfigurazione intelligente dell'ambiente radio, specialmente negli scenari indoor in cui la copertura tradizionale incontra forti limitazioni. L'unione con tecniche di Machine Learning consente di affrontare in modo efficiente la complessità del problema di controllo, aprendo la strada a soluzioni adattive, scalabili e compatibili con i vincoli applicativi reali.
+
+In questa prospettiva, il lavoro svolto costituisce una base metodologica utile per ulteriori approfondimenti e sviluppi. Le IRS non devono essere viste come un'alternativa isolata alle tecnologie esistenti, ma come un elemento complementare capace di ampliare il grado di controllo sul canale radio e di migliorare in modo sostanziale le prestazioni delle reti future.
+
 \clearpage{\pagestyle{empty}\cleardoublepage}
 
 \chapter*{Ringraziamenti}
