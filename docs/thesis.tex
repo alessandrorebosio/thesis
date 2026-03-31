@@ -1142,7 +1142,8 @@ uscite (fasi IRS).
 \end{itemize}
 
 \subsubsection{Considerazioni implementative}
-In sintesi, la regressione lineare multivariata \`e la soluzione pi\`u leggera in
+In sintesi, la regressione lineare multivariata \`e la soluzione
+pi\`u leggera in
 termini computazionali; il k-NN \`e semplice ma meno scalabile perch\'e
 sposta il costo in inferenza; l'MLP richiede un addestramento pi\`u
 oneroso, ma offre un buon compromesso tra accuratezza e latenza in
@@ -1200,7 +1201,8 @@ controllo IRS.
 \label{chap:addestramento}
 
 \section{Generazione dataset sintetico}
-Il dataset è stato generato tramite simulazione parametrica ed è composto da coppie ingresso--uscita del tipo
+Il dataset è stato generato tramite simulazione parametrica ed è
+composto da coppie ingresso--uscita del tipo
 \begin{equation}
   \mathcal{D}=\{(\mathbf{p}^{(i)},\boldsymbol{\theta}^{(i)})\}_{i=1}^{N},
   \qquad
@@ -1208,17 +1210,34 @@ Il dataset è stato generato tramite simulazione parametrica ed è composto da c
   \quad
   \boldsymbol{\theta}^{(i)}\in\mathbb{R}^{M}.
 \end{equation}
-La posizione dell'utente rappresenta l'ingresso del modello, mentre il vettore di fasi IRS costituisce l'etichetta da apprendere.
+La posizione dell'utente rappresenta l'ingresso del modello, mentre
+il vettore di fasi IRS costituisce l'etichetta da apprendere.
 
-Gli elementi dell'IRS sono disposti su una griglia \texttt{size}$\times$\texttt{size}, con $M=\texttt{size}^2$, centrata in prossimità di $(9,4,1.5)$ m. Le posizioni dell'utente sono campionate uniformemente nell'area $x\in[1,8]$, $y\in[1,7]$, con quota fissata a $z=1$ m.
+Gli elementi dell'IRS sono disposti su una griglia
+\texttt{size}$\times$\texttt{size}, con $M=\texttt{size}^2$, centrata
+in prossimità di $(9,4,1.5)$ m. Le posizioni dell'utente sono
+campionate uniformemente nell'area $x\in[1,8]$, $y\in[1,7]$, con
+quota fissata a $z=1$ m.
 
-Per ciascun campione si costruiscono canali complessi semplificati: il canale BS--IRS ha ampiezza costante e fase casuale, mentre il canale IRS--UE dipende dalla distanza elemento--utente tramite un termine attenuativo del tipo $\exp(-d/10)$, anch'esso con fase casuale. Questa scelta permette di ottenere una variazione regolare del canale con la distanza, mantenendo il modello semplice e numericamente stabile.
+Per ciascun campione si costruiscono canali complessi semplificati:
+il canale BS--IRS ha ampiezza costante e fase casuale, mentre il
+canale IRS--UE dipende dalla distanza elemento--utente tramite un
+termine attenuativo del tipo $\exp(-d/10)$, anch'esso con fase
+casuale. Questa scelta permette di ottenere una variazione regolare
+del canale con la distanza, mantenendo il modello semplice e
+numericamente stabile.
 
-La fase ottima per ciascun elemento viene inizialmente calcolata in forma continua come
-\begin{equation}
-  \theta_m^{\text{cont}}=-\angle\!\left(h_{\mathrm{IU},m}^{*}h_{\mathrm{BI},m}\right),
-\end{equation}
-in modo da allineare i contributi riflessi e massimizzare la somma coerente al ricevitore. Le fasi ottenute vengono poi quantizzate su $K$ livelli uniformi in $[0,2\pi)$, coerentemente con i vincoli hardware dell'IRS. In forma esplicita, la quantizzazione del singolo elemento è definita come
+La fase ottima per ciascun elemento viene inizialmente calcolata in
+forma continua come
+\begin{align*}
+  \theta_m^{\text{cont}} =
+  -\angle\!\left(h_{\mathrm{IU},m}^{*}h_{\mathrm{BI},m}\right),
+\end{align*}
+in modo da allineare i contributi riflessi e massimizzare la somma
+coerente al ricevitore. Le fasi ottenute vengono poi quantizzate su
+$K$ livelli uniformi in $[0,2\pi)$, coerentemente con i vincoli
+hardware dell'IRS. In forma esplicita, la quantizzazione del singolo
+elemento è definita come
 \begin{equation}
   \theta_m^{\text{quant}}=
   \arg\min_{q\in\mathcal{Q}_K}
@@ -1226,113 +1245,312 @@ in modo da allineare i contributi riflessi e massimizzare la somma coerente al r
   \qquad
   \mathcal{Q}_K=\left\{0,\frac{2\pi}{K},\dots,\frac{2\pi(K-1)}{K}\right\},
 \end{equation}
-dove $d_{\mathbb{S}^1}(a,b)=\min\{|a-b|,2\pi-|a-b|\}$ è la distanza angolare su circonferenza unitaria.
+dove $d_{\mathbb{S}^1}(a,b)=\min\{|a-b|,2\pi-|a-b|\}$ è la distanza
+angolare su circonferenza unitaria.
 
-Nelle simulazioni sono stati adottati $K=4$, \texttt{size}=8, quindi $M=64$, e $N=2000$ campioni, successivamente suddivisi in training e test con rapporto 80/20.
+Nelle simulazioni sono stati adottati $K=4$, \texttt{size}=8, quindi
+$M=64$, e $N=2000$ campioni, successivamente suddivisi in training e
+test con rapporto 80/20.
 
 \section{Suddivisione training / validation / test}
-La suddivisione del dataset segue una strategia hold-out con rapporto 80/20 tra training e test, in coerenza con l'implementazione sperimentale. Indicando con $N$ il numero totale di campioni, si definiscono
+La suddivisione del dataset segue una strategia hold-out con rapporto
+80/20 tra training e test, in coerenza con l'implementazione
+sperimentale. Indicando con $N$ il numero totale di campioni, si definiscono
 \begin{equation}
   N_{\mathrm{tr}}=\lfloor 0.8N \rfloor,
   \qquad
   N_{\mathrm{te}}=N-N_{\mathrm{tr}}.
 \end{equation}
-Nel caso considerato ($N=2000$), si ottengono $N_{\mathrm{tr}}=1600$ campioni per l'addestramento e $N_{\mathrm{te}}=400$ campioni per la valutazione finale.
+Nel caso considerato ($N=2000$), si ottengono $N_{\mathrm{tr}}=1600$
+campioni per l'addestramento e $N_{\mathrm{te}}=400$ campioni per la
+valutazione finale.
 
-Poiché le posizioni utente sono generate in modo casuale e indipendente, i due sottoinsiemi risultano campioni i.i.d. della medesima distribuzione sintetica. In questa fase non è stato introdotto un validation set separato: il confronto tra modelli è stato condotto a iperparametri fissati, privilegiando la comparabilità diretta delle prestazioni sul medesimo test set.
+Poiché le posizioni utente sono generate in modo casuale e
+indipendente, i due sottoinsiemi risultano campioni i.i.d. della
+medesima distribuzione sintetica. In questa fase non è stato
+introdotto un validation set separato: il confronto tra modelli è
+stato condotto a iperparametri fissati, privilegiando la
+comparabilità diretta delle prestazioni sul medesimo test set.
 
 \section{Metriche di apprendimento}
-La metrica primaria adottata per l'accuratezza di regressione è la \emph{Normalized Mean Squared Error} (NMSE), calcolata tra vettori di fase target e predetti:
-\begin{equation}
-  \mathrm{NMSE}=\frac{\mathbb{E}\!\left[\|\boldsymbol{\theta}-\hat{\boldsymbol{\theta}}\|_2^2\right]}{\mathbb{E}\!\left[\|\boldsymbol{\theta}\|_2^2\right]}.
-\end{equation}
-Valori inferiori di NMSE indicano maggiore fedeltà nella ricostruzione del profilo di fase.
+La metrica primaria adottata per l'accuratezza di regressione è la
+\emph{Normalized Mean Squared Error} (NMSE), calcolata tra vettori di
+fase target e predetti:
+\begin{align*}
+  N_{\boldsymbol{\theta}} &=
+  \mathbb{E}\!\left[
+    \|\boldsymbol{\theta} - \hat{\boldsymbol{\theta}}\|_2^2
+  \right],\\
+  D_{\boldsymbol{\theta}} &=
+  \mathbb{E}\!\left[
+    \|\boldsymbol{\theta}\|_2^2
+  \right],\\
+  \mathrm{NMSE} &=
+  \frac{N_{\boldsymbol{\theta}}}{D_{\boldsymbol{\theta}}}.
+\end{align*}
+Valori inferiori di NMSE indicano maggiore fedeltà nella
+ricostruzione del profilo di fase.
 
-Accanto alla NMSE sono state utilizzate metriche discrete legate ai livelli di quantizzazione: \emph{Tracking@1} (quota di elementi per cui il livello predetto coincide con quello target) e \emph{Tracking@2} (quota di elementi per cui il livello target rientra nei due livelli più vicini alla predizione). La mappatura ai livelli discreti è effettuata con distanza angolare circolare, così da rispettare la periodicità della fase.
+Accanto alla NMSE sono state utilizzate metriche discrete legate ai
+livelli di quantizzazione: \emph{Tracking@1} (quota di elementi per
+cui il livello predetto coincide con quello target) e
+\emph{Tracking@2} (quota di elementi per cui il livello target
+rientra nei due livelli più vicini alla predizione). La mappatura ai
+livelli discreti è effettuata con distanza angolare circolare, così
+da rispettare la periodicità della fase.
 
 È stata inoltre misurata la \emph{Phase Mean Absolute Error} in gradi,
-\begin{equation}
-  \mathrm{MAE}_{\phi}=\mathbb{E}\!\left[\left|\operatorname{wrap}_{[-\pi,\pi)}(\hat{\theta}-\theta)\right|\right],
-\end{equation}
-utile per quantificare l'errore medio angolare in termini fisicamente interpretabili. Come indicatore computazionale è stato infine riportato il tempo di addestramento per ciascun modello.
+\begin{align*}
+  \mathrm{MAE}_{\phi} &=
+  \mathbb{E}\!\left[\left|\operatorname{wrap}_{[-\pi,\pi)}
+  (\hat{\theta}-\theta)\right|\right],
+\end{align*}
+utile per quantificare l'errore medio angolare in termini fisicamente
+interpretabili. Come indicatore computazionale è stato infine
+riportato il tempo di addestramento per ciascun modello.
 
-Nell'analisi avanzata sono state aggiunte: (i) sensibilità a diversi livelli di quantizzazione $K\in\{2,4,8\}$; (ii) confronto con baseline casuale pari a $1/K$ per Tracking@1; (iii) CDF dell'errore di fase; (iv) tracking per zone di distanza utente (near/mid/far).
+Nell'analisi avanzata sono state aggiunte: (i) sensibilità a diversi
+livelli di quantizzazione $K\in\{2,4,8\}$; (ii) confronto con
+baseline casuale pari a $1/K$ per Tracking@1; (iii) CDF dell'errore
+di fase; (iv) tracking per zone di distanza utente (near/mid/far).
 
 \section{Overfitting e generalizzazione}
-Il rischio di overfitting è particolarmente rilevante per modelli più flessibili (in particolare MLP) e in presenza di etichette ad alta dimensionalità ($M=64$). Per contenerlo, l'analisi adotta una valutazione su campioni non visti (test hold-out) e, nel caso MLP, una standardizzazione calcolata esclusivamente sul training set, evitando leakage informativo verso il test set.
+Il rischio di overfitting è particolarmente rilevante per modelli più
+flessibili (in particolare MLP) e in presenza di etichette ad alta
+dimensionalità ($M=64$). Per contenerlo, l'analisi adotta una
+valutazione su campioni non visti (test hold-out) e, nel caso MLP,
+una standardizzazione calcolata esclusivamente sul training set,
+evitando leakage informativo verso il test set.
 
-La generalizzazione è stata verificata lungo tre direttrici complementari. In primo luogo, il confronto delle prestazioni sul test set rispetto al training set permette di identificare eventuali scostamenti sistematici. In secondo luogo, la robustezza rispetto alla quantizzazione ($K=2,4,8$) valuta la stabilità del mapping appreso al variare della granularità della decisione. In terzo luogo, l'analisi per zone di distanza utente e la CDF dell'errore di fase consentono di osservare possibili degradazioni locali o code d'errore elevate.
+La generalizzazione è stata verificata lungo tre direttrici
+complementari. In primo luogo, il confronto delle prestazioni sul
+test set rispetto al training set permette di identificare eventuali
+scostamenti sistematici. In secondo luogo, la robustezza rispetto
+alla quantizzazione ($K=2,4,8$) valuta la stabilità del mapping
+appreso al variare della granularità della decisione. In terzo luogo,
+l'analisi per zone di distanza utente e la CDF dell'errore di fase
+consentono di osservare possibili degradazioni locali o code d'errore elevate.
 
-Resta comunque un limite metodologico: non essendo presente un validation set dedicato (né una cross-validation), la stima della capacità di generalizzazione è riferita alla distribuzione sintetica considerata. Pertanto, eventuali estensioni future dovranno includere scenari di canale più eterogenei e protocolli di validazione multipla per aumentare la robustezza inferenziale.
+Resta comunque un limite metodologico: non essendo presente un
+validation set dedicato (né una cross-validation), la stima della
+capacità di generalizzazione è riferita alla distribuzione sintetica
+considerata. Pertanto, eventuali estensioni future dovranno includere
+scenari di canale più eterogenei e protocolli di validazione multipla
+per aumentare la robustezza inferenziale.
 
 \chapter{Risultati sperimentali}
 \label{chap:risultati}
 
 \section{Confronto scenari}
-In questa sezione vengono confrontate le prestazioni del sistema nei tre casi considerati: assenza di IRS, IRS con fase casuale e IRS con controllo tramite Machine Learning. L'obiettivo è valutare in modo comparativo l'effetto della superficie riconfigurabile sulla copertura indoor e sull'efficacia della stima delle fasi ottimali.
+In questa sezione vengono confrontate le prestazioni del sistema nei
+tre casi considerati: assenza di IRS, IRS con fase casuale e IRS con
+controllo tramite Machine Learning. L'obiettivo è valutare in modo
+comparativo l'effetto della superficie riconfigurabile sulla
+copertura indoor e sull'efficacia della stima delle fasi ottimali.
 
-Nel caso \emph{senza IRS}, il collegamento dipende esclusivamente dal canale diretto BS--UE, che nello scenario considerato risulta fortemente attenuato dalla presenza di ostacoli e dalla natura NLoS dell'ambiente. Questa configurazione costituisce il riferimento di base per misurare il guadagno introdotto dalla superficie riflettente.
+Nel caso \emph{senza IRS}, il collegamento dipende esclusivamente dal
+canale diretto BS--UE, che nello scenario considerato risulta
+fortemente attenuato dalla presenza di ostacoli e dalla natura NLoS
+dell'ambiente. Questa configurazione costituisce il riferimento di
+base per misurare il guadagno introdotto dalla superficie riflettente.
 
-Nel caso di \emph{IRS con fase casuale}, la superficie è attiva ma non viene sfruttata in modo coerente. Le riflessioni prodotte dagli elementi IRS non risultano allineate in fase e, di conseguenza, il contributo complessivo al ricevitore è solo parzialmente costruttivo. In questo scenario si osserva in genere un miglioramento limitato rispetto all'assenza di IRS, ma inferiore rispetto a una configurazione ottimizzata.
+Nel caso di \emph{IRS con fase casuale}, la superficie è attiva ma
+non viene sfruttata in modo coerente. Le riflessioni prodotte dagli
+elementi IRS non risultano allineate in fase e, di conseguenza, il
+contributo complessivo al ricevitore è solo parzialmente costruttivo.
+In questo scenario si osserva in genere un miglioramento limitato
+rispetto all'assenza di IRS, ma inferiore rispetto a una
+configurazione ottimizzata.
 
-Nel caso di \emph{IRS con controllo ML}, il modello addestrato predice una configurazione di fase in funzione della posizione dell'utente, permettendo di orientare in modo più efficace il beamforming passivo verso l'area di interesse. Questo approccio consente di ottenere il massimo incremento di potenza ricevuta tra i tre scenari considerati, mostrando il vantaggio dell'uso di tecniche data-driven per il controllo delle IRS.
+Nel caso di \emph{IRS con controllo ML}, il modello addestrato
+predice una configurazione di fase in funzione della posizione
+dell'utente, permettendo di orientare in modo più efficace il
+beamforming passivo verso l'area di interesse. Questo approccio
+consente di ottenere il massimo incremento di potenza ricevuta tra i
+tre scenari considerati, mostrando il vantaggio dell'uso di tecniche
+data-driven per il controllo delle IRS.
 
 \subsection{Andamento della potenza ricevuta}
-L'analisi della potenza ricevuta mostra che l'introduzione dell'IRS migliora sensibilmente il comportamento del sistema rispetto al caso senza IRS. In particolare, la configurazione con controllo ML tende a produrre valori più elevati e più uniformi sull'area di test, riducendo le zone di copertura debole.
+L'analisi della potenza ricevuta mostra che l'introduzione dell'IRS
+migliora sensibilmente il comportamento del sistema rispetto al caso
+senza IRS. In particolare, la configurazione con controllo ML tende a
+produrre valori più elevati e più uniformi sull'area di test,
+riducendo le zone di copertura debole.
 
-La versione con fase casuale, pur beneficiando della presenza fisica della superficie, non riesce a sfruttarne appieno il potenziale. Questo conferma che la mera presenza dell'IRS non è sufficiente: il guadagno dipende in modo cruciale dalla corretta scelta delle fasi di riflessione.
+La versione con fase casuale, pur beneficiando della presenza fisica
+della superficie, non riesce a sfruttarne appieno il potenziale.
+Questo conferma che la mera presenza dell'IRS non è sufficiente: il
+guadagno dipende in modo cruciale dalla corretta scelta delle fasi di
+riflessione.
 
 \subsection{Coverage gain}
-Il \emph{coverage gain} rappresenta la metrica più significativa per quantificare il beneficio apportato dall'IRS. Nel caso ottimizzato tramite ML, il guadagno medio risulta superiore rispetto alle altre configurazioni, soprattutto nelle regioni della stanza in cui il canale diretto è più debole.
+Il \emph{coverage gain} rappresenta la metrica più significativa per
+quantificare il beneficio apportato dall'IRS. Nel caso ottimizzato
+tramite ML, il guadagno medio risulta superiore rispetto alle altre
+configurazioni, soprattutto nelle regioni della stanza in cui il
+canale diretto è più debole.
 
-La configurazione con fase casuale mostra invece un incremento meno stabile, con guadagni locali alternati a zone in cui il contributo riflesso non è pienamente costruttivo. Il confronto evidenzia quindi che l'ottimizzazione delle fasi è il vero elemento abilitante per ottenere miglioramenti consistenti.
+La configurazione con fase casuale mostra invece un incremento meno
+stabile, con guadagni locali alternati a zone in cui il contributo
+riflesso non è pienamente costruttivo. Il confronto evidenzia quindi
+che l'ottimizzazione delle fasi è il vero elemento abilitante per
+ottenere miglioramenti consistenti.
 
 \section{Analisi dei risultati}
-I risultati sperimentali confermano che il problema di controllo delle IRS non può essere affrontato in modo efficace con una configurazione casuale o non adattiva. La predizione delle fasi basata su Machine Learning consente di approssimare in modo efficiente la soluzione ottima, riducendo la complessità computazionale rispetto a metodi iterativi tradizionali.
+I risultati sperimentali confermano che il problema di controllo
+delle IRS non può essere affrontato in modo efficace con una
+configurazione casuale o non adattiva. La predizione delle fasi
+basata su Machine Learning consente di approssimare in modo
+efficiente la soluzione ottima, riducendo la complessità
+computazionale rispetto a metodi iterativi tradizionali.
 
-Dal punto di vista delle metriche di apprendimento, i modelli più semplici risultano generalmente più rapidi e interpretabili, ma meno accurati nella ricostruzione delle configurazioni di fase. Al contrario, modelli più flessibili come l'MLP tendono a catturare meglio la relazione non lineare tra posizione dell'utente e configurazione ottimale, ottenendo prestazioni migliori sul test set.
+Dal punto di vista delle metriche di apprendimento, i modelli più
+semplici risultano generalmente più rapidi e interpretabili, ma meno
+accurati nella ricostruzione delle configurazioni di fase. Al
+contrario, modelli più flessibili come l'MLP tendono a catturare
+meglio la relazione non lineare tra posizione dell'utente e
+configurazione ottimale, ottenendo prestazioni migliori sul test set.
 
-Un altro aspetto rilevante riguarda la sensibilità alla quantizzazione della fase. Poiché l'IRS reale dispone di un numero finito di stati, la discretizzazione introduce inevitabilmente una perdita rispetto al caso continuo. Tuttavia, anche con 2 bit per elemento, il sistema mantiene un guadagno apprezzabile, confermando la validità pratica dell'approccio considerato.
+Un altro aspetto rilevante riguarda la sensibilità alla
+quantizzazione della fase. Poiché l'IRS reale dispone di un numero
+finito di stati, la discretizzazione introduce inevitabilmente una
+perdita rispetto al caso continuo. Tuttavia, anche con 2 bit per
+elemento, il sistema mantiene un guadagno apprezzabile, confermando
+la validità pratica dell'approccio considerato.
 
 \section{Discussione critica}
-I risultati ottenuti mostrano che le IRS possono rappresentare una soluzione efficace per migliorare la copertura indoor, soprattutto in scenari NLoS dove il collegamento diretto è penalizzato. Il principale vantaggio risiede nella possibilità di agire sull'ambiente di propagazione con hardware relativamente semplice e a basso consumo energetico.
+I risultati ottenuti mostrano che le IRS possono rappresentare una
+soluzione efficace per migliorare la copertura indoor, soprattutto in
+scenari NLoS dove il collegamento diretto è penalizzato. Il
+principale vantaggio risiede nella possibilità di agire sull'ambiente
+di propagazione con hardware relativamente semplice e a basso consumo
+energetico.
 
-Allo stesso tempo emergono alcuni limiti. Il primo è legato alla qualità della stima della posizione dell'utente: errori di localizzazione possono tradursi in configurazioni di fase non ottimali e quindi in una riduzione del guadagno complessivo. Il secondo limite riguarda la generalizzazione del modello, che dipende fortemente dalla distribuzione dei dati di training e dalla fedeltà del simulatore rispetto a un ambiente reale.
+Allo stesso tempo emergono alcuni limiti. Il primo è legato alla
+qualità della stima della posizione dell'utente: errori di
+localizzazione possono tradursi in configurazioni di fase non
+ottimali e quindi in una riduzione del guadagno complessivo. Il
+secondo limite riguarda la generalizzazione del modello, che dipende
+fortemente dalla distribuzione dei dati di training e dalla fedeltà
+del simulatore rispetto a un ambiente reale.
 
-Infine, va sottolineato che il modello adottato è volutamente semplificato: si considerano un solo utente, uno scenario quasi-statico e una superficie IRS idealizzata. Queste ipotesi sono utili per isolare il contributo del controllo di fase, ma dovranno essere rilassate in sviluppi futuri per valutare il comportamento del sistema in condizioni più realistiche, con mobilità, multiutenza e canali time-varying.
+Infine, va sottolineato che il modello adottato è volutamente
+semplificato: si considerano un solo utente, uno scenario
+quasi-statico e una superficie IRS idealizzata. Queste ipotesi sono
+utili per isolare il contributo del controllo di fase, ma dovranno
+essere rilassate in sviluppi futuri per valutare il comportamento del
+sistema in condizioni più realistiche, con mobilità, multiutenza e
+canali time-varying.
 
-In conclusione, il capitolo evidenzia che l'integrazione tra IRS e Machine Learning è promettente e coerente con gli obiettivi della tesi, ma richiede ulteriori estensioni per affrontare scenari più complessi e applicazioni su scala reale.
+In conclusione, il capitolo evidenzia che l'integrazione tra IRS e
+Machine Learning è promettente e coerente con gli obiettivi della
+tesi, ma richiede ulteriori estensioni per affrontare scenari più
+complessi e applicazioni su scala reale.
 
 \chapter{Conclusioni e sviluppi futuri}
 \label{chap:conclusioni}
 
 \section{Risultati principali}
-Nel presente lavoro è stato analizzato il problema del controllo delle fasi di una Intelligent Reflecting Surface (IRS) in uno scenario indoor NLoS, con l'obiettivo di migliorare la copertura radio e la potenza ricevuta da un utente mobile. A partire dalla modellazione del canale assistito da IRS, è stato definito un quadro teorico e operativo che ha permesso di formulare il problema come una mappatura tra la posizione dell'utente e la configurazione ottimale delle fasi della superficie riflettente.
+Nel presente lavoro è stato analizzato il problema del controllo
+delle fasi di una Intelligent Reflecting Surface (IRS) in uno
+scenario indoor NLoS, con l'obiettivo di migliorare la copertura
+radio e la potenza ricevuta da un utente mobile. A partire dalla
+modellazione del canale assistito da IRS, è stato definito un quadro
+teorico e operativo che ha permesso di formulare il problema come una
+mappatura tra la posizione dell'utente e la configurazione ottimale
+delle fasi della superficie riflettente.
 
-L'analisi ha mostrato che l'introduzione dell'IRS può fornire un contributo significativo al miglioramento delle prestazioni del sistema, soprattutto in ambienti in cui il collegamento diretto BS--UE risulta attenuato o fortemente compromesso dalla presenza di ostacoli. In particolare, il controllo delle fasi tramite tecniche di Machine Learning ha consentito di approssimare in modo efficace la soluzione ottima, riducendo la complessità computazionale rispetto a un approccio puramente iterativo o esaustivo.
+L'analisi ha mostrato che l'introduzione dell'IRS può fornire un
+contributo significativo al miglioramento delle prestazioni del
+sistema, soprattutto in ambienti in cui il collegamento diretto
+BS--UE risulta attenuato o fortemente compromesso dalla presenza di
+ostacoli. In particolare, il controllo delle fasi tramite tecniche di
+Machine Learning ha consentito di approssimare in modo efficace la
+soluzione ottima, riducendo la complessità computazionale rispetto a
+un approccio puramente iterativo o esaustivo.
 
-Tra i modelli considerati, le soluzioni più semplici hanno offerto un buon compromesso tra interpretabilità e costo computazionale, mentre modelli più flessibili, come l'MLP, hanno mostrato una maggiore capacità di catturare relazioni non lineari tra la posizione dell'utente e la configurazione ottimale della superficie. Nel complesso, i risultati confermano che l'integrazione tra IRS e Machine Learning rappresenta una strategia promettente per scenari indoor dinamici e caratterizzati da copertura non uniforme.
+Tra i modelli considerati, le soluzioni più semplici hanno offerto un
+buon compromesso tra interpretabilità e costo computazionale, mentre
+modelli più flessibili, come l'MLP, hanno mostrato una maggiore
+capacità di catturare relazioni non lineari tra la posizione
+dell'utente e la configurazione ottimale della superficie. Nel
+complesso, i risultati confermano che l'integrazione tra IRS e
+Machine Learning rappresenta una strategia promettente per scenari
+indoor dinamici e caratterizzati da copertura non uniforme.
 
 \section{Limiti del lavoro}
-Nonostante i risultati incoraggianti, il lavoro presenta alcune limitazioni che è opportuno evidenziare. In primo luogo, lo scenario considerato è volutamente semplificato: si è assunto un contesto a utente singolo, quasi-statico e con una superficie IRS idealizzata, senza modellare in modo esplicito guasti, latenza di controllo o imperfezioni hardware più realistiche. Questa scelta ha permesso di isolare il contributo del beamforming passivo, ma limita la generalizzabilità immediata dei risultati a scenari reali più complessi.
+Nonostante i risultati incoraggianti, il lavoro presenta alcune
+limitazioni che è opportuno evidenziare. In primo luogo, lo scenario
+considerato è volutamente semplificato: si è assunto un contesto a
+utente singolo, quasi-statico e con una superficie IRS idealizzata,
+senza modellare in modo esplicito guasti, latenza di controllo o
+imperfezioni hardware più realistiche. Questa scelta ha permesso di
+isolare il contributo del beamforming passivo, ma limita la
+generalizzabilità immediata dei risultati a scenari reali più complessi.
 
-Un secondo limite riguarda la qualità delle informazioni di ingresso al modello. L'approccio basato sulla posizione dell'utente è efficace dal punto di vista computazionale, ma dipende dalla precisione del sistema di localizzazione indoor. Errori di stima della posizione possono tradursi in configurazioni di fase subottimali e in una riduzione del guadagno complessivo. Inoltre, la robustezza del modello dipende fortemente dalla distribuzione dei dati sintetici utilizzati in fase di addestramento e dalla fedeltà del simulatore rispetto a un ambiente fisico reale.
+Un secondo limite riguarda la qualità delle informazioni di ingresso
+al modello. L'approccio basato sulla posizione dell'utente è efficace
+dal punto di vista computazionale, ma dipende dalla precisione del
+sistema di localizzazione indoor. Errori di stima della posizione
+possono tradursi in configurazioni di fase subottimali e in una
+riduzione del guadagno complessivo. Inoltre, la robustezza del
+modello dipende fortemente dalla distribuzione dei dati sintetici
+utilizzati in fase di addestramento e dalla fedeltà del simulatore
+rispetto a un ambiente fisico reale.
 
-Un'ulteriore limitazione è legata alla quantizzazione delle fasi IRS. Sebbene l'adozione di un numero ridotto di livelli sia coerente con i vincoli hardware, essa introduce inevitabilmente una perdita prestazionale rispetto al caso continuo. Di conseguenza, il risultato ottenuto rappresenta un compromesso tra efficienza implementativa e qualità del beamforming passivo.
+Un'ulteriore limitazione è legata alla quantizzazione delle fasi IRS.
+Sebbene l'adozione di un numero ridotto di livelli sia coerente con i
+vincoli hardware, essa introduce inevitabilmente una perdita
+prestazionale rispetto al caso continuo. Di conseguenza, il risultato
+ottenuto rappresenta un compromesso tra efficienza implementativa e
+qualità del beamforming passivo.
 
 \section{Sviluppi futuri}
-Diversi possibili sviluppi futuri possono estendere e rafforzare il lavoro presentato. Una prima direzione riguarda l'introduzione di scenari multiutente, nei quali la configurazione delle fasi IRS deve tenere conto di richieste potenzialmente conflittuali e di metriche di ottimizzazione più articolate, come il bilanciamento della qualità del servizio tra utenti diversi o la massimizzazione della somma delle capacità.
+Diversi possibili sviluppi futuri possono estendere e rafforzare il
+lavoro presentato. Una prima direzione riguarda l'introduzione di
+scenari multiutente, nei quali la configurazione delle fasi IRS deve
+tenere conto di richieste potenzialmente conflittuali e di metriche
+di ottimizzazione più articolate, come il bilanciamento della qualità
+del servizio tra utenti diversi o la massimizzazione della somma delle capacità.
 
-Un secondo sviluppo consiste nell'introduzione della dinamica temporale esplicita del canale e del movimento dell'utente. In questo caso, il problema potrebbe essere affrontato con tecniche di Reinforcement Learning più evolute, capaci di apprendere policy adattive nel tempo e di reagire a variazioni del contesto radio in modo più efficace rispetto a un modello statico.
+Un secondo sviluppo consiste nell'introduzione della dinamica
+temporale esplicita del canale e del movimento dell'utente. In questo
+caso, il problema potrebbe essere affrontato con tecniche di
+Reinforcement Learning più evolute, capaci di apprendere policy
+adattive nel tempo e di reagire a variazioni del contesto radio in
+modo più efficace rispetto a un modello statico.
 
-Un'altra estensione importante riguarda l'uso di dataset più realistici e di ambienti di simulazione più complessi, in cui siano presenti più ostacoli, materiali differenti, mobili e condizioni di propagazione variabili. In tali scenari, potrebbe risultare utile integrare il Machine Learning con tecniche di ottimizzazione classica o con modelli ibridi physics-informed, al fine di combinare interpretabilità, accuratezza e robustezza.
+Un'altra estensione importante riguarda l'uso di dataset più
+realistici e di ambienti di simulazione più complessi, in cui siano
+presenti più ostacoli, materiali differenti, mobili e condizioni di
+propagazione variabili. In tali scenari, potrebbe risultare utile
+integrare il Machine Learning con tecniche di ottimizzazione classica
+o con modelli ibridi physics-informed, al fine di combinare
+interpretabilità, accuratezza e robustezza.
 
-Infine, un'evoluzione naturale del lavoro sarebbe la validazione sperimentale su piattaforme reali o testbed dedicati, per verificare in condizioni operative la bontà delle ipotesi adottate nel modello. Questo passaggio consentirebbe di valutare meglio gli effetti di rumore, ritardi di controllo, non idealità hardware e incertezza di localizzazione, fornendo un quadro più completo delle potenzialità delle IRS nelle reti wireless di nuova generazione.
+Infine, un'evoluzione naturale del lavoro sarebbe la validazione
+sperimentale su piattaforme reali o testbed dedicati, per verificare
+in condizioni operative la bontà delle ipotesi adottate nel modello.
+Questo passaggio consentirebbe di valutare meglio gli effetti di
+rumore, ritardi di controllo, non idealità hardware e incertezza di
+localizzazione, fornendo un quadro più completo delle potenzialità
+delle IRS nelle reti wireless di nuova generazione.
 
 \section{Considerazioni finali}
-Le Intelligent Reflecting Surfaces rappresentano una tecnologia molto promettente per la riconfigurazione intelligente dell'ambiente radio, specialmente negli scenari indoor in cui la copertura tradizionale incontra forti limitazioni. L'unione con tecniche di Machine Learning consente di affrontare in modo efficiente la complessità del problema di controllo, aprendo la strada a soluzioni adattive, scalabili e compatibili con i vincoli applicativi reali.
+Le Intelligent Reflecting Surfaces rappresentano una tecnologia molto
+promettente per la riconfigurazione intelligente dell'ambiente radio,
+specialmente negli scenari indoor in cui la copertura tradizionale
+incontra forti limitazioni. L'unione con tecniche di Machine Learning
+consente di affrontare in modo efficiente la complessità del problema
+di controllo, aprendo la strada a soluzioni adattive, scalabili e
+compatibili con i vincoli applicativi reali.
 
-In questa prospettiva, il lavoro svolto costituisce una base metodologica utile per ulteriori approfondimenti e sviluppi. Le IRS non devono essere viste come un'alternativa isolata alle tecnologie esistenti, ma come un elemento complementare capace di ampliare il grado di controllo sul canale radio e di migliorare in modo sostanziale le prestazioni delle reti future.
+In questa prospettiva, il lavoro svolto costituisce una base
+metodologica utile per ulteriori approfondimenti e sviluppi. Le IRS
+non devono essere viste come un'alternativa isolata alle tecnologie
+esistenti, ma come un elemento complementare capace di ampliare il
+grado di controllo sul canale radio e di migliorare in modo
+sostanziale le prestazioni delle reti future.
 
 \clearpage{\pagestyle{empty}\cleardoublepage}
 
