@@ -30,7 +30,7 @@
   \begin{center}
     {\LARGE\bfseries Intelligent Reflecting Surfaces}\\[6mm]
     {\large\itshape Progettazione, modellazione e ottimizzazione}\\[18mm]
-    {\large\bfseries Tesi di Laurea in Ingegneria e Scienze Informatiche}\\[2mm]
+    {\large\bfseries Tesi di Laurea in Telecomunicazioni}\\[2mm]
   \end{center}
 
   \vspace{30mm}
@@ -1264,6 +1264,44 @@ Il rischio di overfitting è particolarmente rilevante per modelli più flessibi
 La generalizzazione è stata verificata lungo tre direttrici complementari. In primo luogo, il confronto delle prestazioni sul test set rispetto al training set permette di identificare eventuali scostamenti sistematici. In secondo luogo, la robustezza rispetto alla quantizzazione ($K=2,4,8$) valuta la stabilità del mapping appreso al variare della granularità della decisione. In terzo luogo, l'analisi per zone di distanza utente e la CDF dell'errore di fase consentono di osservare possibili degradazioni locali o code d'errore elevate.
 
 Resta comunque un limite metodologico: non essendo presente un validation set dedicato (né una cross-validation), la stima della capacità di generalizzazione è riferita alla distribuzione sintetica considerata. Pertanto, eventuali estensioni future dovranno includere scenari di canale più eterogenei e protocolli di validazione multipla per aumentare la robustezza inferenziale.
+
+\chapter{Risultati sperimentali}
+\label{chap:risultati}
+
+\section{Confronto scenari}
+In questa sezione vengono confrontate le prestazioni del sistema nei tre casi considerati: assenza di IRS, IRS con fase casuale e IRS con controllo tramite Machine Learning. L'obiettivo è valutare in modo comparativo l'effetto della superficie riconfigurabile sulla copertura indoor e sull'efficacia della stima delle fasi ottimali.
+
+Nel caso \emph{senza IRS}, il collegamento dipende esclusivamente dal canale diretto BS--UE, che nello scenario considerato risulta fortemente attenuato dalla presenza di ostacoli e dalla natura NLoS dell'ambiente. Questa configurazione costituisce il riferimento di base per misurare il guadagno introdotto dalla superficie riflettente.
+
+Nel caso di \emph{IRS con fase casuale}, la superficie è attiva ma non viene sfruttata in modo coerente. Le riflessioni prodotte dagli elementi IRS non risultano allineate in fase e, di conseguenza, il contributo complessivo al ricevitore è solo parzialmente costruttivo. In questo scenario si osserva in genere un miglioramento limitato rispetto all'assenza di IRS, ma inferiore rispetto a una configurazione ottimizzata.
+
+Nel caso di \emph{IRS con controllo ML}, il modello addestrato predice una configurazione di fase in funzione della posizione dell'utente, permettendo di orientare in modo più efficace il beamforming passivo verso l'area di interesse. Questo approccio consente di ottenere il massimo incremento di potenza ricevuta tra i tre scenari considerati, mostrando il vantaggio dell'uso di tecniche data-driven per il controllo delle IRS.
+
+\subsection{Andamento della potenza ricevuta}
+L'analisi della potenza ricevuta mostra che l'introduzione dell'IRS migliora sensibilmente il comportamento del sistema rispetto al caso senza IRS. In particolare, la configurazione con controllo ML tende a produrre valori più elevati e più uniformi sull'area di test, riducendo le zone di copertura debole.
+
+La versione con fase casuale, pur beneficiando della presenza fisica della superficie, non riesce a sfruttarne appieno il potenziale. Questo conferma che la mera presenza dell'IRS non è sufficiente: il guadagno dipende in modo cruciale dalla corretta scelta delle fasi di riflessione.
+
+\subsection{Coverage gain}
+Il \emph{coverage gain} rappresenta la metrica più significativa per quantificare il beneficio apportato dall'IRS. Nel caso ottimizzato tramite ML, il guadagno medio risulta superiore rispetto alle altre configurazioni, soprattutto nelle regioni della stanza in cui il canale diretto è più debole.
+
+La configurazione con fase casuale mostra invece un incremento meno stabile, con guadagni locali alternati a zone in cui il contributo riflesso non è pienamente costruttivo. Il confronto evidenzia quindi che l'ottimizzazione delle fasi è il vero elemento abilitante per ottenere miglioramenti consistenti.
+
+\section{Analisi dei risultati}
+I risultati sperimentali confermano che il problema di controllo delle IRS non può essere affrontato in modo efficace con una configurazione casuale o non adattiva. La predizione delle fasi basata su Machine Learning consente di approssimare in modo efficiente la soluzione ottima, riducendo la complessità computazionale rispetto a metodi iterativi tradizionali.
+
+Dal punto di vista delle metriche di apprendimento, i modelli più semplici risultano generalmente più rapidi e interpretabili, ma meno accurati nella ricostruzione delle configurazioni di fase. Al contrario, modelli più flessibili come l'MLP tendono a catturare meglio la relazione non lineare tra posizione dell'utente e configurazione ottimale, ottenendo prestazioni migliori sul test set.
+
+Un altro aspetto rilevante riguarda la sensibilità alla quantizzazione della fase. Poiché l'IRS reale dispone di un numero finito di stati, la discretizzazione introduce inevitabilmente una perdita rispetto al caso continuo. Tuttavia, anche con 2 bit per elemento, il sistema mantiene un guadagno apprezzabile, confermando la validità pratica dell'approccio considerato.
+
+\section{Discussione critica}
+I risultati ottenuti mostrano che le IRS possono rappresentare una soluzione efficace per migliorare la copertura indoor, soprattutto in scenari NLoS dove il collegamento diretto è penalizzato. Il principale vantaggio risiede nella possibilità di agire sull'ambiente di propagazione con hardware relativamente semplice e a basso consumo energetico.
+
+Allo stesso tempo emergono alcuni limiti. Il primo è legato alla qualità della stima della posizione dell'utente: errori di localizzazione possono tradursi in configurazioni di fase non ottimali e quindi in una riduzione del guadagno complessivo. Il secondo limite riguarda la generalizzazione del modello, che dipende fortemente dalla distribuzione dei dati di training e dalla fedeltà del simulatore rispetto a un ambiente reale.
+
+Infine, va sottolineato che il modello adottato è volutamente semplificato: si considerano un solo utente, uno scenario quasi-statico e una superficie IRS idealizzata. Queste ipotesi sono utili per isolare il contributo del controllo di fase, ma dovranno essere rilassate in sviluppi futuri per valutare il comportamento del sistema in condizioni più realistiche, con mobilità, multiutenza e canali time-varying.
+
+In conclusione, il capitolo evidenzia che l'integrazione tra IRS e Machine Learning è promettente e coerente con gli obiettivi della tesi, ma richiede ulteriori estensioni per affrontare scenari più complessi e applicazioni su scala reale.
 
 \clearpage{\pagestyle{empty}\cleardoublepage}
 
