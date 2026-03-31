@@ -1250,7 +1250,9 @@ angolare su circonferenza unitaria.
 
 Nelle simulazioni sono stati adottati $K=4$, \texttt{size}=8, quindi
 $M=64$, e $N=2000$ campioni, successivamente suddivisi in training e
-test con rapporto 80/20.
+test con rapporto 80/20. La scelta di $K=4$ (2 bit per elemento)
+rappresenta un compromesso realistico tra complessità hardware e
+prestazioni del sistema.
 
 \section{Suddivisione training / validation / test}
 La suddivisione del dataset segue una strategia hold-out con rapporto
@@ -1272,285 +1274,262 @@ introdotto un validation set separato: il confronto tra modelli è
 stato condotto a iperparametri fissati, privilegiando la
 comparabilità diretta delle prestazioni sul medesimo test set.
 
+\section{Implementazione algoritmi}
+Per il confronto sperimentale sono stati implementati i tre algoritmi
+di Machine Learning analizzati nel Capitolo 5: regressione lineare
+multivariata, k-Nearest Neighbors (kNN) e Multi-Layer Perceptron
+(MLP). I dettagli teorici e le proprietà di ciascun metodo sono
+discussi nelle Sezioni 5.1-5.3. Di seguito si riportano i parametri
+di configurazione specifici adottati per questo lavoro:
+\begin{itemize}
+  \item \textbf{Linear Regression}: Soluzione in forma chiusa mediante
+    minimi quadrati, senza regolarizzazione.
+  \item \textbf{kNN}: $k=5$ vicini, distanza euclidea nello spazio
+    delle posizioni.
+  \item \textbf{MLP}: Architettura con uno strato nascosto di 64
+    neuroni, attivazione ReLU, learning rate $\eta=0.01$, 100 epoche,
+    input standardizzato sul training set.
+\end{itemize}
+
 \section{Metriche di apprendimento}
-La metrica primaria adottata per l'accuratezza di regressione è la
-\emph{Normalized Mean Squared Error} (NMSE), calcolata tra vettori di
-fase target e predetti:
-\begin{align*}
-  N_{\boldsymbol{\theta}} &=
-  \mathbb{E}\!\left[
-    \|\boldsymbol{\theta} - \hat{\boldsymbol{\theta}}\|_2^2
-  \right],\\
-  D_{\boldsymbol{\theta}} &=
-  \mathbb{E}\!\left[
-    \|\boldsymbol{\theta}\|_2^2
-  \right],\\
-  \mathrm{NMSE} &=
-  \frac{N_{\boldsymbol{\theta}}}{D_{\boldsymbol{\theta}}}.
-\end{align*}
-Valori inferiori di NMSE indicano maggiore fedeltà nella
-ricostruzione del profilo di fase.
+Sono state utilizzate le seguenti metriche:
+\begin{itemize}
+  \item \textbf{NMSE}: Normalized Mean Squared Error, misura continua
+    dell'errore di predizione sul vettore di fasi.
+  \item \textbf{Tracking@1}: percentuale di elementi IRS con livello
+    quantizzato predetto esatto (baseline casuale: $1/K$).
+  \item \textbf{Tracking@2}: percentuale di elementi con target nei due
+    livelli più vicini alla predizione.
+  \item \textbf{Phase MAE}: errore assoluto medio in gradi.
+  \item \textbf{Tempo di addestramento}: indicatore di efficienza
+    computazionale.
+\end{itemize}
 
-Accanto alla NMSE sono state utilizzate metriche discrete legate ai
-livelli di quantizzazione: \emph{Tracking@1} (quota di elementi per
-cui il livello predetto coincide con quello target) e
-\emph{Tracking@2} (quota di elementi per cui il livello target
-rientra nei due livelli più vicini alla predizione). La mappatura ai
-livelli discreti è effettuata con distanza angolare circolare, così
-da rispettare la periodicità della fase.
-
-È stata inoltre misurata la \emph{Phase Mean Absolute Error} in gradi,
-\begin{align*}
-  \mathrm{MAE}_{\phi} &=
-  \mathbb{E}\!\left[\left|\operatorname{wrap}_{[-\pi,\pi)}
-  (\hat{\theta}-\theta)\right|\right],
-\end{align*}
-utile per quantificare l'errore medio angolare in termini fisicamente
-interpretabili. Come indicatore computazionale è stato infine
-riportato il tempo di addestramento per ciascun modello.
-
-Nell'analisi avanzata sono state aggiunte: (i) sensibilità a diversi
-livelli di quantizzazione $K\in\{2,4,8\}$; (ii) confronto con
-baseline casuale pari a $1/K$ per Tracking@1; (iii) CDF dell'errore
-di fase; (iv) tracking per zone di distanza utente (near/mid/far).
+Nell'analisi avanzata sono state valutate: sensibilità alla
+quantizzazione \newline ($K\in\{2,4,8\}$), CDF dell'errore di fase, e \newline tracking
+per zone di distanza utente (near/mid/far).
 
 \section{Overfitting e generalizzazione}
-Il rischio di overfitting è particolarmente rilevante per modelli più
-flessibili (in particolare MLP) e in presenza di etichette ad alta
-dimensionalità ($M=64$). Per contenerlo, l'analisi adotta una
-valutazione su campioni non visti (test hold-out) e, nel caso MLP,
-una standardizzazione calcolata esclusivamente sul training set,
-evitando leakage informativo verso il test set.
+Per contrastare l'overfitting, l'analisi utilizza valutazione hold-out
+su test set e standardizzazione calcolata solo sul training set. La
+generalizzazione è verificata tramite: (i) confronto prestazioni
+training/test, (ii) robustezza alla quantizzazione ($K=2,4,8$), (iii)
+analisi per zone di distanza e CDF dell'errore.
 
-La generalizzazione è stata verificata lungo tre direttrici
-complementari. In primo luogo, il confronto delle prestazioni sul
-test set rispetto al training set permette di identificare eventuali
-scostamenti sistematici. In secondo luogo, la robustezza rispetto
-alla quantizzazione ($K=2,4,8$) valuta la stabilità del mapping
-appreso al variare della granularità della decisione. In terzo luogo,
-l'analisi per zone di distanza utente e la CDF dell'errore di fase
-consentono di osservare possibili degradazioni locali o code d'errore elevate.
-
-Resta comunque un limite metodologico: non essendo presente un
-validation set dedicato (né una cross-validation), la stima della
-capacità di generalizzazione è riferita alla distribuzione sintetica
-considerata. Pertanto, eventuali estensioni future dovranno includere
-scenari di canale più eterogenei e protocolli di validazione multipla
-per aumentare la robustezza inferenziale.
+Un limite metodologico è l'assenza di validation set dedicato: la
+stima di generalizzazione è quindi riferita alla distribuzione
+sintetica considerata. Estensioni future dovranno includere scenari
+più eterogenei e validazione multipla.
 
 \chapter{Risultati sperimentali}
 \label{chap:risultati}
 
-\section{Confronto scenari}
-In questa sezione vengono confrontate le prestazioni del sistema nei
-tre casi considerati: assenza di IRS, IRS con fase casuale e IRS con
-controllo tramite Machine Learning. L'obiettivo è valutare in modo
-comparativo l'effetto della superficie riconfigurabile sulla
-copertura indoor e sull'efficacia della stima delle fasi ottimali.
+Questo capitolo presenta i risultati sperimentali dei tre modelli di
+Machine Learning su dataset di 2000 campioni ($M=64$, $K=4$).
 
-Nel caso \emph{senza IRS}, il collegamento dipende esclusivamente dal
-canale diretto BS--UE, che nello scenario considerato risulta
-fortemente attenuato dalla presenza di ostacoli e dalla natura NLoS
-dell'ambiente. Questa configurazione costituisce il riferimento di
-base per misurare il guadagno introdotto dalla superficie riflettente.
+\section{Confronto prestazionale dei modelli}
+I risultati per regressione lineare, kNN e MLP sono riportati in
+Tabella~\ref{tab:results_k4}.
 
-Nel caso di \emph{IRS con fase casuale}, la superficie è attiva ma
-non viene sfruttata in modo coerente. Le riflessioni prodotte dagli
-elementi IRS non risultano allineate in fase e, di conseguenza, il
-contributo complessivo al ricevitore è solo parzialmente costruttivo.
-In questo scenario si osserva in genere un miglioramento limitato
-rispetto all'assenza di IRS, ma inferiore rispetto a una
-configurazione ottimizzata.
+\begin{table}[ht]
+  \centering
+  \caption{Prestazioni dei modelli per $K=4$ (2000 campioni, split 80/20)}
+  \label{tab:results_k4}
+  \begin{tabular}{lcccccc}
+    \hline
+    \textbf{Modello} & \textbf{NMSE} & \textbf{Tempo (s)} &
+    \textbf{Trk@1 (\%)} & \textbf{Trk@2 (\%)} & \textbf{MAE (deg)} \\
+    \hline
+    Linear  & 0.668 & 0.000 & 46.02 & 87.55 & 56.13 \\
+    kNN     & 0.838 & 0.041 & 45.51 & 82.91 & 57.19 \\
+    MLP     & 0.668 & 0.311 & 47.07 & 87.55 & 56.14 \\
+    \hline
+    \multicolumn{6}{l}{\emph{Baseline casuale: Trk@1 = 25.00\%, Trk@2
+    = 50.00\%}}\\
+    \hline
+  \end{tabular}
+\end{table}
 
-Nel caso di \emph{IRS con controllo ML}, il modello addestrato
-predice una configurazione di fase in funzione della posizione
-dell'utente, permettendo di orientare in modo più efficace il
-beamforming passivo verso l'area di interesse. Questo approccio
-consente di ottenere il massimo incremento di potenza ricevuta tra i
-tre scenari considerati, mostrando il vantaggio dell'uso di tecniche
-data-driven per il controllo delle IRS.
+\subsection{Analisi delle metriche principali}
+La Figura~\ref{fig:comparison_metrics} riporta graficamente il
+confronto tra i tre modelli rispetto alle quattro metriche principali:
+NMSE, tempo di addestramento, Tracking@1 e Phase MAE.
 
-\subsection{Andamento della potenza ricevuta}
-L'analisi della potenza ricevuta mostra che l'introduzione dell'IRS
-migliora sensibilmente il comportamento del sistema rispetto al caso
-senza IRS. In particolare, la configurazione con controllo ML tende a
-produrre valori più elevati e più uniformi sull'area di test,
-riducendo le zone di copertura debole.
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=0.9\textwidth]{figures/comparison_metrics.png}
+  \caption{Confronto prestazionale tra Linear Regression, kNN e MLP per
+    $K=4$. In alto a sinistra: NMSE (minore è meglio); in alto a destra:
+    tempo di addestramento; in basso a sinistra: Tracking@1 con baseline
+  casuale; in basso a destra: Phase MAE in gradi.}
+  \label{fig:comparison_metrics}
+\end{figure}
 
-La versione con fase casuale, pur beneficiando della presenza fisica
-della superficie, non riesce a sfruttarne appieno il potenziale.
-Questo conferma che la mera presenza dell'IRS non è sufficiente: il
-guadagno dipende in modo cruciale dalla corretta scelta delle fasi di
-riflessione.
+Dal confronto (Figura~\ref{fig:comparison_metrics}) emergono:
+\begin{itemize}
+  \item \textbf{NMSE}: Linear e MLP ottengono 0.668, kNN 0.838. La
+    relazione posizione-fase è approssimabile linearmente.
+  \item \textbf{Tracking@1}: Tutti i modelli superano la baseline
+    (25\%) con MLP al 47.07\%, Linear 46.02\%, kNN 45.51\%.
+  \item \textbf{Phase MAE}: Valori simili tra Linear (56.13°) e MLP
+    (56.14°), kNN leggermente peggiore (57.19°), coerente con $K=4$.
+  \item \textbf{Tempo}: Linear trascurabile, kNN 40~ms, MLP 310~ms.
+\end{itemize}
 
-\subsection{Coverage gain}
-Il \emph{coverage gain} rappresenta la metrica più significativa per
-quantificare il beneficio apportato dall'IRS. Nel caso ottimizzato
-tramite ML, il guadagno medio risulta superiore rispetto alle altre
-configurazioni, soprattutto nelle regioni della stanza in cui il
-canale diretto è più debole.
+Il modello lineare offre il miglior compromesso
+accuratezza-velocità; l'MLP fornisce leggero vantaggio in Tracking@1
+al costo di tempo maggiore.
 
-La configurazione con fase casuale mostra invece un incremento meno
-stabile, con guadagni locali alternati a zone in cui il contributo
-riflesso non è pienamente costruttivo. Il confronto evidenzia quindi
-che l'ottimizzazione delle fasi è il vero elemento abilitante per
-ottenere miglioramenti consistenti.
+\section{Sensibilità alla quantizzazione}
+I risultati per $K\in\{2,4,8\}$ sono in Tabella~\ref{tab:results_by_k}.
 
-\section{Analisi dei risultati}
-I risultati sperimentali confermano che il problema di controllo
-delle IRS non può essere affrontato in modo efficace con una
-configurazione casuale o non adattiva. La predizione delle fasi
-basata su Machine Learning consente di approssimare in modo
-efficiente la soluzione ottima, riducendo la complessità
-computazionale rispetto a metodi iterativi tradizionali.
+\begin{table}[ht]
+  \centering
+  \caption{Prestazioni per diversi valori di $K$}
+  \label{tab:results_by_k}
+  \begin{tabular}{lccccc}
+    \hline
+    \textbf{$K$} & \textbf{Modello} & \textbf{NMSE} & \textbf{Trk@1
+    (\%)} & \textbf{Trk@2 (\%)} & \textbf{MAE (deg)} \\
+    \hline
+    2 & Linear & 0.754 & 75.30 & 100.0 & 67.12 \\
+    2 & kNN    & 0.948 & 68.16 & 100.0 & 67.10 \\
+    2 & MLP    & 0.754 & 75.30 & 100.0 & 67.16 \\
+    \hline
+    4 & Linear & 0.667 & 44.69 & 87.61 & 56.12 \\
+    4 & kNN    & 0.837 & 45.36 & 82.89 & 57.25 \\
+    4 & MLP    & 0.667 & 45.50 & 87.61 & 56.13 \\
+    \hline
+    8 & Linear & 0.640 & 12.11 & 42.80 & 51.23 \\
+    8 & kNN    & 0.812 & 23.71 & 48.20 & 54.65 \\
+    8 & MLP    & 0.639 & 12.11 & 42.49 & 51.15 \\
+    \hline
+  \end{tabular}
+\end{table}
 
-Dal punto di vista delle metriche di apprendimento, i modelli più
-semplici risultano generalmente più rapidi e interpretabili, ma meno
-accurati nella ricostruzione delle configurazioni di fase. Al
-contrario, modelli più flessibili come l'MLP tendono a catturare
-meglio la relazione non lineare tra posizione dell'utente e
-configurazione ottimale, ottenendo prestazioni migliori sul test set.
+\subsection{Andamento del Tracking@1 con K}
+La Figura~\ref{fig:tracking_vs_k} mostra l'andamento del Tracking@1 in
+funzione di $K$ per i tre modelli, confrontato con la baseline casuale
+$1/K$.
 
-Un altro aspetto rilevante riguarda la sensibilità alla
-quantizzazione della fase. Poiché l'IRS reale dispone di un numero
-finito di stati, la discretizzazione introduce inevitabilmente una
-perdita rispetto al caso continuo. Tuttavia, anche con 2 bit per
-elemento, il sistema mantiene un guadagno apprezzabile, confermando
-la validità pratica dell'approccio considerato.
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=0.75\textwidth]{figures/tracking_vs_k.png}
+  \caption{Tracking@1 in funzione del numero di livelli di
+    quantizzazione $K$. La linea tratteggiata rappresenta la baseline
+    casuale $1/K$. Tutti i modelli superano la baseline, con prestazioni
+  migliori per $K$ ridotto.}
+  \label{fig:tracking_vs_k}
+\end{figure}
 
-\section{Discussione critica}
-I risultati ottenuti mostrano che le IRS possono rappresentare una
-soluzione efficace per migliorare la copertura indoor, soprattutto in
-scenari NLoS dove il collegamento diretto è penalizzato. Il
-principale vantaggio risiede nella possibilità di agire sull'ambiente
-di propagazione con hardware relativamente semplice e a basso consumo
-energetico.
+I risultati mostrano:
+\begin{itemize}
+  \item $K=2$: Linear e MLP raggiungono 75.30\% (baseline 50\%), kNN
+    68.16\%. Tracking@2 100\% per tutti (errore massimo un livello).
+  \item $K=4$: Tracking@1 circa 45\% (baseline 25\%), tutti i modelli
+    superano nettamente il caso casuale.
+  \item $K=8$: Linear e MLP 12\% (baseline 12.5\%), kNN 23.71\%
+    dimostra maggiore robustezza in questo regime grazie
+    all'approccio locale.
+\end{itemize}
 
-Allo stesso tempo emergono alcuni limiti. Il primo è legato alla
-qualità della stima della posizione dell'utente: errori di
-localizzazione possono tradursi in configurazioni di fase non
-ottimali e quindi in una riduzione del guadagno complessivo. Il
-secondo limite riguarda la generalizzazione del modello, che dipende
-fortemente dalla distribuzione dei dati di training e dalla fedeltà
-del simulatore rispetto a un ambiente reale.
+All'aumentare di $K$, NMSE e MAE migliorano (approssimazione più
+fedele), ma Tracking@1 diminuisce (difficoltà discriminazione livelli
+adiacenti).
 
-Infine, va sottolineato che il modello adottato è volutamente
-semplificato: si considerano un solo utente, uno scenario
-quasi-statico e una superficie IRS idealizzata. Queste ipotesi sono
-utili per isolare il contributo del controllo di fase, ma dovranno
-essere rilassate in sviluppi futuri per valutare il comportamento del
-sistema in condizioni più realistiche, con mobilità, multiutenza e
-canali time-varying.
+\section{Distribuzione errore e analisi spaziale}
+La CDF dell'errore di fase (Figura~\ref{fig:phase_error_cdf}) mostra
+distribuzioni quasi identiche per Linear/MLP (mediana ~45°, 90\%
+errori <90°), mentre kNN presenta coda più pesante, coerente con NMSE
+più alta.
 
-In conclusione, il capitolo evidenzia che l'integrazione tra IRS e
-Machine Learning è promettente e coerente con gli obiettivi della
-tesi, ma richiede ulteriori estensioni per affrontare scenari più
-complessi e applicazioni su scala reale.
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=0.7\textwidth]{figures/phase_error_cdf.png}
+  \caption{CDF dell'errore assoluto di fase per $K=4$.}
+  \label{fig:phase_error_cdf}
+\end{figure}
+
+L'analisi per zone di distanza (Tabella~\ref{tab:results_by_zone})
+mostra degradazione contenuta (2-3 punti percentuali) tra near e far,
+confermando generalizzazione uniforme sull'area di test.
+
+\begin{table}[ht]
+  \centering
+  \caption{Tracking@1 (\%) per zona di distanza ($K=4$)}
+  \label{tab:results_by_zone}
+  \begin{tabular}{lccc}
+    \hline
+    \textbf{Modello} & \textbf{Near} & \textbf{Mid} & \textbf{Far} \\
+    \hline
+    Linear  & 46.5 & 44.2 & 43.3 \\
+    kNN     & 45.9 & 45.4 & 44.8 \\
+    MLP     & 46.7 & 45.2 & 44.6 \\
+    \hline
+  \end{tabular}
+\end{table}
+
+\section{Discussione}
+I risultati confermano l'efficacia delle tecniche di Machine Learning
+per il controllo IRS. Linear e MLP ottengono NMSE identiche (0.668),
+suggerendo che la relazione posizione-fase è largamente lineare nello
+scenario considerato. Il kNN, pur meno competitivo in NMSE, mostra
+robustezza per $K=8$.
+
+Il trade-off quantizzazione emerge chiaramente: $K$ ridotto migliora
+Tracking@1 ma limita la granularità di controllo; $K$ elevato migliora
+NMSE/MAE ma riduce accuratezza discreta. $K=4$ rappresenta un
+compromesso pratico (2 bit per elemento).
 
 \chapter{Conclusioni e sviluppi futuri}
 \label{chap:conclusioni}
 
 \section{Risultati principali}
-Nel presente lavoro è stato analizzato il problema del controllo
-delle fasi di una Intelligent Reflecting Surface (IRS) in uno
-scenario indoor NLoS, con l'obiettivo di migliorare la copertura
-radio e la potenza ricevuta da un utente mobile. A partire dalla
-modellazione del canale assistito da IRS, è stato definito un quadro
-teorico e operativo che ha permesso di formulare il problema come una
-mappatura tra la posizione dell'utente e la configurazione ottimale
-delle fasi della superficie riflettente.
+Il lavoro ha analizzato il controllo IRS per scenari indoor NLoS,
+formulando il problema come mappatura posizione-utente → fasi IRS.
 
-L'analisi ha mostrato che l'introduzione dell'IRS può fornire un
-contributo significativo al miglioramento delle prestazioni del
-sistema, soprattutto in ambienti in cui il collegamento diretto
-BS--UE risulta attenuato o fortemente compromesso dalla presenza di
-ostacoli. In particolare, il controllo delle fasi tramite tecniche di
-Machine Learning ha consentito di approssimare in modo efficace la
-soluzione ottima, riducendo la complessità computazionale rispetto a
-un approccio puramente iterativo o esaustivo.
+I risultati sperimentali dimostrano che: (i) Linear e MLP ottengono
+NMSE identiche (0.668), (ii) tutti i modelli superano baseline
+casuale con Tracking@1 al 47\% (MLP) vs 25\% casuale per $K=4$, (iii)
+esiste trade-off quantizzazione: $K$ basso migliora Tracking@1 ($K=2$:
+75\%), $K$ alto migliora NMSE ($K=8$: 0.64), $K=4$ offre compromesso
+pratico, (iv) generalizzazione spaziale uniforme con degradazione 2-3\%
+tra zone near/far.
 
-Tra i modelli considerati, le soluzioni più semplici hanno offerto un
-buon compromesso tra interpretabilità e costo computazionale, mentre
-modelli più flessibili, come l'MLP, hanno mostrato una maggiore
-capacità di catturare relazioni non lineari tra la posizione
-dell'utente e la configurazione ottimale della superficie. Nel
-complesso, i risultati confermano che l'integrazione tra IRS e
-Machine Learning rappresenta una strategia promettente per scenari
-indoor dinamici e caratterizzati da copertura non uniforme.
+\section{Contributi metodologici}
+Contributi principali: (i) formalizzazione come apprendimento
+supervisionato con metriche discrete specifiche (Tracking@1/2), (ii)
+protocollo generazione dataset sintetico efficiente, (iii) confronto
+sistematico di tre famiglie algoritmiche.
 
 \section{Limiti del lavoro}
-Nonostante i risultati incoraggianti, il lavoro presenta alcune
-limitazioni che è opportuno evidenziare. In primo luogo, lo scenario
-considerato è volutamente semplificato: si è assunto un contesto a
-utente singolo, quasi-statico e con una superficie IRS idealizzata,
-senza modellare in modo esplicito guasti, latenza di controllo o
-imperfezioni hardware più realistiche. Questa scelta ha permesso di
-isolare il contributo del beamforming passivo, ma limita la
-generalizzabilità immediata dei risultati a scenari reali più complessi.
-
-Un secondo limite riguarda la qualità delle informazioni di ingresso
-al modello. L'approccio basato sulla posizione dell'utente è efficace
-dal punto di vista computazionale, ma dipende dalla precisione del
-sistema di localizzazione indoor. Errori di stima della posizione
-possono tradursi in configurazioni di fase subottimali e in una
-riduzione del guadagno complessivo. Inoltre, la robustezza del
-modello dipende fortemente dalla distribuzione dei dati sintetici
-utilizzati in fase di addestramento e dalla fedeltà del simulatore
-rispetto a un ambiente fisico reale.
-
-Un'ulteriore limitazione è legata alla quantizzazione delle fasi IRS.
-Sebbene l'adozione di un numero ridotto di livelli sia coerente con i
-vincoli hardware, essa introduce inevitabilmente una perdita
-prestazionale rispetto al caso continuo. Di conseguenza, il risultato
-ottenuto rappresenta un compromesso tra efficienza implementativa e
-qualità del beamforming passivo.
+Principali limitazioni: (i) scenario idealizzato (utente singolo,
+quasi-statico, canale semplificato), (ii) dipendenza da
+localizzazione accurata, (iii) assenza validation set dedicato, (iv)
+quantizzazione uniforme fissa, (v) non considera latenze e
+imperfezioni hardware.
 
 \section{Sviluppi futuri}
-Diversi possibili sviluppi futuri possono estendere e rafforzare il
-lavoro presentato. Una prima direzione riguarda l'introduzione di
-scenari multiutente, nei quali la configurazione delle fasi IRS deve
-tenere conto di richieste potenzialmente conflittuali e di metriche
-di ottimizzazione più articolate, come il bilanciamento della qualità
-del servizio tra utenti diversi o la massimizzazione della somma delle capacità.
-
-Un secondo sviluppo consiste nell'introduzione della dinamica
-temporale esplicita del canale e del movimento dell'utente. In questo
-caso, il problema potrebbe essere affrontato con tecniche di
-Reinforcement Learning più evolute, capaci di apprendere policy
-adattive nel tempo e di reagire a variazioni del contesto radio in
-modo più efficace rispetto a un modello statico.
-
-Un'altra estensione importante riguarda l'uso di dataset più
-realistici e di ambienti di simulazione più complessi, in cui siano
-presenti più ostacoli, materiali differenti, mobili e condizioni di
-propagazione variabili. In tali scenari, potrebbe risultare utile
-integrare il Machine Learning con tecniche di ottimizzazione classica
-o con modelli ibridi physics-informed, al fine di combinare
-interpretabilità, accuratezza e robustezza.
-
-Infine, un'evoluzione naturale del lavoro sarebbe la validazione
-sperimentale su piattaforme reali o testbed dedicati, per verificare
-in condizioni operative la bontà delle ipotesi adottate nel modello.
-Questo passaggio consentirebbe di valutare meglio gli effetti di
-rumore, ritardi di controllo, non idealità hardware e incertezza di
-localizzazione, fornendo un quadro più completo delle potenzialità
-delle IRS nelle reti wireless di nuova generazione.
+Direzioni di estensione: (i) scenari multiutente con ottimizzazione
+multi-obiettivo, (ii) dinamica temporale con Reinforcement Learning
+(DQN, Actor-Critic), (iii) simulatori avanzati (ray-tracing, 3GPP),
+(iv) architetture neurali avanzate (CNN, LSTM, GNN), (v) apprendimento
+federato e online, (vi) validazione sperimentale su testbed reali.
+fornendo un quadro più completo delle potenzialità delle IRS nelle
+reti wireless di nuova generazione.
 
 \section{Considerazioni finali}
-Le Intelligent Reflecting Surfaces rappresentano una tecnologia molto
-promettente per la riconfigurazione intelligente dell'ambiente radio,
-specialmente negli scenari indoor in cui la copertura tradizionale
-incontra forti limitazioni. L'unione con tecniche di Machine Learning
-consente di affrontare in modo efficiente la complessità del problema
-di controllo, aprendo la strada a soluzioni adattive, scalabili e
-compatibili con i vincoli applicativi reali.
+Le IRS rappresentano una tecnologia promettente per scenari indoor
+con copertura limitata. L'integrazione con Machine Learning consente
+di affrontare efficientemente la complessità del problema di
+controllo, con soluzioni adattive e scalabili.
 
-In questa prospettiva, il lavoro svolto costituisce una base
-metodologica utile per ulteriori approfondimenti e sviluppi. Le IRS
-non devono essere viste come un'alternativa isolata alle tecnologie
-esistenti, ma come un elemento complementare capace di ampliare il
-grado di controllo sul canale radio e di migliorare in modo
-sostanziale le prestazioni delle reti future.
+I risultati dimostrano che modelli semplici (regressione lineare)
+offrono prestazioni competitive con risorse computazionali limitate,
+mentre architetture più flessibili (MLP) offrono margini di
+miglioramento. Le IRS rappresentano un elemento complementare per
+ampliare il controllo sul canale radio nelle reti future (6G e
+beyond).
 
 \clearpage{\pagestyle{empty}\cleardoublepage}
 
