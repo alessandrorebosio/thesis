@@ -30,7 +30,8 @@
   \begin{center}
     {\LARGE\bfseries Intelligent Reflecting Surfaces}\\[6mm]
     {\large\itshape Progettazione, modellazione e ottimizzazione}\\[18mm]
-    {\large\bfseries Tesi di Laurea in Machine Learning e Telecomunicazioni}\\[2mm]
+    {\large\bfseries Tesi di Laurea in Machine Learning e
+    Telecomunicazioni}\\[2mm]
   \end{center}
 
   \vspace{30mm}
@@ -1201,60 +1202,34 @@ controllo IRS.
 \label{chap:addestramento}
 
 \section{Generazione dataset sintetico}
-Il dataset è stato generato tramite simulazione parametrica ed è
-composto da coppie ingresso--uscita del tipo
+In questa tesi il dataset è creato in simulazione, perché non sono
+disponibili misure reali già etichettate per la configurazione IRS.
+Ogni campione associa la posizione utente sul piano,
+$\mathbf{p}=[x,y]^T$, al corrispondente vettore delle fasi IRS,
+$\boldsymbol{\theta}=[\theta_1,\dots,\theta_M]^T$. In forma compatta:
 \begin{equation}
-  \mathcal{D}=\{(\mathbf{p}^{(i)},\boldsymbol{\theta}^{(i)})\}_{i=1}^{N},
-  \qquad
-  \mathbf{p}^{(i)}=[x^{(i)},y^{(i)}]^T,
-  \quad
-  \boldsymbol{\theta}^{(i)}\in\mathbb{R}^{M}.
+  \mathcal{D}=\{(\mathbf{p}^{(i)},\boldsymbol{\theta}^{(i)})\}_{i=1}^{N}.
 \end{equation}
-La posizione dell'utente rappresenta l'ingresso del modello, mentre
-il vettore di fasi IRS costituisce l'etichetta da apprendere.
 
-Gli elementi dell'IRS sono disposti su una griglia
-\texttt{size}$\times$\texttt{size}, con $M=\texttt{size}^2$, centrata
-in prossimità di $(9,4,1.5)$ m. Le posizioni dell'utente sono
-campionate uniformemente nell'area $x\in[1,8]$, $y\in[1,7]$, con
-quota fissata a $z=1$ m.
+La costruzione del dataset è diretta: si fissano prima la geometria e
+i parametri dello scenario (IRS $8\times 8$, quindi $M=64$, con
+  quantizzazione a $K=4$ livelli e area utente $x\in[1,8]$,
+$y\in[1,7]$), poi si estrae una posizione utente casuale nell'area e,
+per quella posizione, si calcola con il modello semplificato la
+configurazione di fase che massimizza la potenza ricevuta. Infine, le
+fasi continue vengono proiettate sui livelli discreti ammessi dall'hardware IRS.
 
-Per ciascun campione si costruiscono canali complessi semplificati:
-il canale BS--IRS ha ampiezza costante e fase casuale, mentre il
-canale IRS--UE dipende dalla distanza elemento--utente tramite un
-termine attenuativo del tipo $\exp(-d/10)$, anch'esso con fase
-casuale. Questa scelta permette di ottenere una variazione regolare
-del canale con la distanza, mantenendo il modello semplice e
-numericamente stabile.
+In pratica, il dataset risponde alla domanda: \emph{``dato questo
+punto in stanza, quali fasi devo impostare sugli elementi IRS?''}
+Questo rende immediata la formulazione supervisionata del problema,
+perché il modello apprende direttamente la mappatura posizione
+$\rightarrow$ configurazione di fase.
 
-La fase ottima per ciascun elemento viene inizialmente calcolata in
-forma continua come
-\begin{align*}
-  \theta_m^{\text{cont}} =
-  -\angle\!\left(h_{\mathrm{IU},m}^{*}h_{\mathrm{BI},m}\right),
-\end{align*}
-in modo da allineare i contributi riflessi e massimizzare la somma
-coerente al ricevitore. Le fasi ottenute vengono poi quantizzate su
-$K$ livelli uniformi in $[0,2\pi)$, coerentemente con i vincoli
-hardware dell'IRS. In forma esplicita, la quantizzazione del singolo
-elemento è definita come
-\begin{equation}
-  \theta_m^{\text{quant}}=
-  \arg\min_{q\in\mathcal{Q}_K}
-  d_{\mathbb{S}^1}(\theta_m^{\text{cont}},q),
-  \qquad
-  \mathcal{Q}_K=\left\{0,\frac{2\pi}{K},\dots,\frac{2\pi(K-1)}{K}\right\},
-\end{equation}
-dove $d_{\mathbb{S}^1}(a,b)=\min\{|a-b|,2\pi-|a-b|\}$ è la distanza
-angolare su circonferenza unitaria.
+Nel lavoro sono stati generati $N=2000$ campioni. Questa numerosità è
+sufficiente per confrontare i modelli considerati mantenendo tempi di
+addestramento contenuti.
 
-Nelle simulazioni sono stati adottati $K=4$, \texttt{size}=8, quindi
-$M=64$, e $N=2000$ campioni, successivamente suddivisi in training e
-test con rapporto 80/20. La scelta di $K=4$ (2 bit per elemento)
-rappresenta un compromesso realistico tra complessità hardware e
-prestazioni del sistema.
-
-\section{Suddivisione training / validation / test}
+\section{Suddivisione training e test}
 La suddivisione del dataset segue una strategia hold-out con rapporto
 80/20 tra training e test, in coerenza con l'implementazione
 sperimentale. Indicando con $N$ il numero totale di campioni, si definiscono
@@ -1269,57 +1244,100 @@ valutazione finale.
 
 Poiché le posizioni utente sono generate in modo casuale e
 indipendente, i due sottoinsiemi risultano campioni i.i.d. della
-medesima distribuzione sintetica. In questa fase non è stato
+medesima distribuzione sintetica, cioè indipendenti e identicamente
+distribuiti. In questa fase non è stato
 introdotto un validation set separato: il confronto tra modelli è
 stato condotto a iperparametri fissati, privilegiando la
 comparabilità diretta delle prestazioni sul medesimo test set.
 
-\section{Implementazione algoritmi}
-Per il confronto sperimentale sono stati implementati i tre algoritmi
-di Machine Learning analizzati nel Capitolo 5: regressione lineare
-multivariata, k-Nearest Neighbors (kNN) e Multi-Layer Perceptron
-(MLP). I dettagli teorici e le proprietà di ciascun metodo sono
-discussi nelle Sezioni 5.1-5.3. Di seguito si riportano i parametri
-di configurazione specifici adottati per questo lavoro:
-\begin{itemize}
-  \item \textbf{Linear Regression}: Soluzione in forma chiusa mediante
-    minimi quadrati, senza regolarizzazione.
-  \item \textbf{kNN}: $k=5$ vicini, distanza euclidea nello spazio
-    delle posizioni.
-  \item \textbf{MLP}: Architettura con uno strato nascosto di 64
-    neuroni, attivazione ReLU, learning rate $\eta=0.01$, 100 epoche,
-    input standardizzato sul training set.
-\end{itemize}
+\section{Flusso sperimentale}
+Il flusso sperimentale è stato progettato per rispondere a una
+domanda semplice: dato un utente in una certa posizione, quale
+modello riesce a stimare meglio la configurazione di fase dell'IRS.
+Per mantenere il confronto corretto, i tre modelli analizzati nel
+\cref{chap:algoritmi} (regressione lineare multivariata, k-Nearest
+Neighbors e MLP) sono stati valutati nelle stesse condizioni: stesso
+dataset, stesso split training/test e stesse metriche finali.
+
+Operativamente, il procedimento seguito è il seguente. Per prima
+cosa, si addestra ciascun modello usando solo il training set. In
+questa fase, ogni modello apprende la relazione tra input ($x,y$
+dell'utente) e output (vettore di fasi IRS). Successivamente, a
+training concluso, si passa al test set, che non è mai usato durante
+l'addestramento. In questo modo la valutazione misura la capacità di
+generalizzare a posizioni non viste prima, che è il comportamento
+rilevante in un impiego reale.
+
+La \textbf{regressione lineare} è stata utilizzata come riferimento
+di base, perché è il modello più semplice e veloce da addestrare: se
+ottiene risultati competitivi, significa che una parte importante del
+problema può essere descritta con una dipendenza quasi lineare. Il
+\textbf{kNN} è stato impostato con $k=5$ e distanza euclidea, così da
+bilanciare precisione locale e stabilità numerica. L'\textbf{MLP} è
+stato configurato con uno strato nascosto da 64 neuroni, attivazione
+ReLU, learning rate $\eta=0.01$ e 100 epoche, per rappresentare una
+soluzione più flessibile capace di catturare relazioni non lineari.
+
+Per evitare distorsioni nella valutazione, la standardizzazione degli
+input è stata calcolata esclusivamente sul training set e poi
+applicata al test set con gli stessi parametri. Questa scelta
+impedisce che il modello riceva informazione indiretta dal test e
+rende il confronto metodologicamente corretto. Al termine del
+processo, le predizioni dei tre modelli sono confrontate in modo
+diretto sulle metriche descritte nella sezione successiva.
 
 \section{Metriche di apprendimento}
-Sono state utilizzate le seguenti metriche:
-\begin{itemize}
-  \item \textbf{NMSE}: Normalized Mean Squared Error, misura continua
-    dell'errore di predizione sul vettore di fasi.
-  \item \textbf{Tracking@1}: percentuale di elementi IRS con livello
-    quantizzato predetto esatto (baseline casuale: $1/K$).
-  \item \textbf{Tracking@2}: percentuale di elementi con target nei due
-    livelli più vicini alla predizione.
-  \item \textbf{Phase MAE}: errore assoluto medio in gradi.
-  \item \textbf{Tempo di addestramento}: indicatore di efficienza
-    computazionale.
-\end{itemize}
+Per valutare in modo completo i modelli non è sufficiente osservare
+un solo numero, perché ogni metrica descrive un aspetto diverso del
+problema. In particolare, è stata usata la \textbf{NMSE} (Normalized
+Mean Squared Error), che misura quanto le fasi predette si
+discostano, in media, dalle fasi target. Valori più bassi indicano
+predizioni più accurate.
 
-Nell'analisi avanzata sono state valutate: sensibilità alla
-quantizzazione \newline ($K\in\{2,4,8\}$), CDF dell'errore di fase, e \newline tracking
-per zone di distanza utente (near/mid/far).
+Accanto alla NMSE sono state adottate due metriche di tracking su
+fasi quantizzate. La \textbf{Tracking@1} indica la percentuale di
+elementi IRS per cui il livello di fase predetto coincide esattamente
+con quello target; è quindi una misura ``stretta'' di correttezza. La
+\textbf{Tracking@2} è una misura più tollerante: il risultato è
+considerato corretto se il livello target rientra tra i due livelli
+più vicini alla predizione. In questo modo si distingue tra errori
+gravi e piccoli scostamenti locali.
+
+Per rendere l'errore anche più interpretabile dal punto di vista
+fisico, è stato utilizzato il \textbf{Phase MAE}, cioè l'errore medio
+assoluto di fase espresso in gradi. Questa metrica permette di capire
+in modo immediato di quanti gradi, in media, il modello ``sbaglia''
+la fase da assegnare a ciascun elemento IRS. Infine, è stato misurato
+il \textbf{tempo di addestramento}, utile per confrontare
+l'efficienza computazionale dei modelli a parità di dataset e configurazione.
+
+Nell'analisi avanzata, le metriche precedenti sono state osservate
+anche in condizioni diverse, variando il numero di livelli di
+quantizzazione ($K\in\{2,4,8\}$), analizzando la CDF dell'errore di
+fase e valutando le prestazioni per diverse zone di distanza utente
+(vicina, intermedia, lontana). Questo consente di capire non solo
+quale modello sia mediamente migliore, ma anche quanto sia robusto al
+cambiare dello scenario.
 
 \section{Overfitting e generalizzazione}
-Per contrastare l'overfitting, l'analisi utilizza valutazione hold-out
-su test set e standardizzazione calcolata solo sul training set. La
-generalizzazione è verificata tramite: (i) confronto prestazioni
-training/test, (ii) robustezza alla quantizzazione ($K=2,4,8$), (iii)
-analisi per zone di distanza e CDF dell'errore.
+Per ridurre il rischio di overfitting, la valutazione è stata
+impostata con strategia hold-out su test set, mantenendo una netta
+separazione tra addestramento e verifica finale. In particolare, la
+standardizzazione degli input è stata stimata esclusivamente sui dati
+di training e poi applicata al test con gli stessi parametri, così da
+evitare qualunque leakage informativo.
 
-Un limite metodologico è l'assenza di validation set dedicato: la
-stima di generalizzazione è quindi riferita alla distribuzione
-sintetica considerata. Estensioni future dovranno includere scenari
-più eterogenei e validazione multipla.
+La capacità di generalizzazione è stata analizzata confrontando le
+prestazioni tra training e test, osservando la robustezza al variare
+dei livelli di quantizzazione ($K=2,4,8$) e verificando il
+comportamento del modello in diverse zone di distanza tramite
+l'analisi della CDF dell'errore di fase.
+
+Resta comunque un limite metodologico: l'assenza di un validation set
+dedicato implica che la stima di generalizzazione sia riferita alla
+sola distribuzione sintetica adottata in questo lavoro. In
+prospettiva, sarà quindi utile estendere la valutazione a scenari più
+eterogenei e a protocolli di validazione multipla.
 
 \chapter{Risultati sperimentali}
 \label{chap:risultati}
