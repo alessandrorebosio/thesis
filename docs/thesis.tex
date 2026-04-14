@@ -481,7 +481,7 @@ Lo scenario analizzato fa riferimento a un ambiente \textit{indoor}di
 tipo \textit{office NLoS} (Non Line-of-Sight), come definito
 nellaraccomandazione ITU-R P.1238~\cite{itu_p1238_2025}. L'ambiente
 èmodellato come una stanza rettangolare di dimensioni pari
-a$10\,\mathrm{m} \times 8\,\mathrm{m} \times 3\,\mathrm{m}$.
+a $10\,\mathrm{m} \times 8\,\mathrm{m} \times 3\,\mathrm{m}$.
 
 La \textit{Base Station} (BS) è installata in prossimità di un angolo
 del soffitto, nel punto $(0,\, 0,\, 2.8)\,\mathrm{m}$, in accordo con
@@ -491,6 +491,10 @@ elementi disposti in una griglia $8 \times 8$, è montato su una
 parete laterale nel punto $(9,\, 4,\, 1.5)\,\mathrm{m}$ e orientato
 verso l'interno della stanza, in modo da massimizzare la riflessione
 dei percorsi utili verso l'utente.
+La scelta di $M=64$ rappresenta un compromesso tra guadagno di
+beamforming passivo e complessità: un numero di elementi inferiore
+riduce il margine di miglioramento della copertura, mentre valori più
+elevati aumentano dimensionalità del problema e costo computazionale.
 
 L'utente mobile (UE) si muove su un piano orizzontale a quota $z =
 1\,\mathrm{m}$, con posizione $\mathbf{p} = (x, y, 1)$ distribuita
@@ -576,6 +580,10 @@ quantizzazione a $K=4$ livelli (2 bit per elemento):
   \theta_m \in \left\{0, \frac{2\pi}{K}, \dots, \frac{2\pi(K-1)}{K}\right\}.
   \label{eq:theta_quantized}
 \end{equation}
+La scelta di $K=4$ è coerente con vincoli hardware realistici e con
+la necessità di limitare l'overhead di controllo: 2 bit per elemento
+offrono una granularità di fase adeguata mantenendo contenuti
+complessità e latenza di riconfigurazione.
 
 La potenza ricevuta totale è descritta da \eqref{eq:P_r_tot}. Nel
 nostro scenario, il primo termine rappresenta il collegamento diretto
@@ -1342,36 +1350,56 @@ eterogenei e a protocolli di validazione multipla.
 \chapter{Risultati sperimentali}
 \label{chap:risultati}
 
-Questo capitolo presenta i risultati sperimentali dei tre modelli di
-Machine Learning su dataset di 2000 campioni ($M=64$, $K=4$).
+Questo capitolo riporta e discute in modo sistematico i risultati
+sperimentali ottenuti dai tre modelli di Machine Learning sul dataset
+di 2000 campioni ($M=64$, $K=4$). L'analisi confronta accuratezza,
+robustezza e costo computazionale, con l'obiettivo di evidenziare i
+compromessi tra prestazioni predittive e complessità operativa nel
+controllo delle fasi IRS. Per garantire comparabilità tra i modelli,
+la valutazione principale è condotta sulla configurazione di
+riferimento ($M=64$, $K=4$): in particolare, $K=4$ è stato adottato
+poiché costituisce un compromesso tra granularità del controllo di
+fase e complessità implementativa, limitando l'overhead di
+riconfigurazione rispetto a quantizzazioni più fini. La motivazione
+progettuale completa è discussa nel capitolo sullo scenario e nel
+modello di canale (\cref{chap:scenario}).
 
 \section{Confronto prestazionale dei modelli}
-I risultati per regressione lineare, kNN e MLP sono riportati in
-Tabella~\ref{tab:results_k4}.
+La Tabella~\ref{tab:results_k4} riporta il confronto prestazionale
+tra Regressione Lineare, k-Nearest Neighbors (kNN) e
+Multi-Layer Perceptron (MLP) nel caso di riferimento $K=4$.
+
+Per interpretare correttamente le metriche di tracking si introduce,
+prima del confronto, una baseline casuale: in assenza di
+apprendimento, la probabilità di selezionare casualmente il livello
+di fase corretto è pari a $1/K$ (Tracking@1), mentre la probabilità
+di includerlo tra i due livelli più vicini è pari a $2/K$
+(Tracking@2, per $K\geq 2$). Nel caso $K=4$, ciò corrisponde a
+25.00\% e 50.00\%.
 
 \begin{table}[ht]
   \centering
   \caption{Prestazioni dei modelli per $K=4$ (2000 campioni, split 80/20)}
   \label{tab:results_k4}
-  \begin{tabular}{lcccccc}
+  \begin{tabular}{lccccc}
     \hline
     \textbf{Modello} & \textbf{NMSE} & \textbf{Tempo (s)} &
     \textbf{Trk@1 (\%)} & \textbf{Trk@2 (\%)} & \textbf{MAE (deg)} \\
     \hline
-    Linear  & 0.668 & 0.000 & 46.02 & 87.55 & 56.13 \\
-    kNN     & 0.838 & 0.041 & 45.51 & 82.91 & 57.19 \\
-    MLP     & 0.668 & 0.311 & 47.07 & 87.55 & 56.14 \\
+    Linear & 0.668 & 0.000 & 46.02 & 87.55 & 56.13 \\
+    kNN    & 0.838 & 0.041 & 45.51 & 82.91 & 57.19 \\
+    MLP    & 0.668 & 0.311 & 47.07 & 87.55 & 56.14 \\
     \hline
     \multicolumn{6}{l}{\emph{Baseline casuale: Trk@1 = 25.00\%, Trk@2
-    = 50.00\%}}\\
+    = 50.00\%}} \\
     \hline
   \end{tabular}
 \end{table}
 
 \subsection{Analisi delle metriche principali}
-La Figura~\ref{fig:comparison_metrics} riporta graficamente il
-confronto tra i tre modelli rispetto alle quattro metriche principali:
-NMSE, tempo di addestramento, Tracking@1 e Phase MAE.
+La Figura~\ref{fig:comparison_metrics} mostra graficamente il
+confronto tra i tre modelli in base alle principali metriche di
+valutazione: NMSE, tempo di addestramento, Tracking@1 e Phase MAE.
 
 \begin{figure}[ht]
   \centering
@@ -1383,23 +1411,31 @@ NMSE, tempo di addestramento, Tracking@1 e Phase MAE.
   \label{fig:comparison_metrics}
 \end{figure}
 
-Dal confronto (Figura~\ref{fig:comparison_metrics}) emergono:
-\begin{itemize}
-  \item \textbf{NMSE}: Linear e MLP ottengono 0.668, kNN 0.838. La
-    relazione posizione-fase è approssimabile linearmente.
-  \item \textbf{Tracking@1}: Tutti i modelli superano la baseline
-    (25\%) con MLP al 47.07\%, Linear 46.02\%, kNN 45.51\%.
-  \item \textbf{Phase MAE}: Valori simili tra Linear (56.13°) e MLP
-    (56.14°), kNN leggermente peggiore (57.19°), coerente con $K=4$.
-  \item \textbf{Tempo}: Linear trascurabile, kNN 40~ms, MLP 310~ms.
-\end{itemize}
-
-Il modello lineare offre il miglior compromesso
-accuratezza-velocità; l'MLP fornisce leggero vantaggio in Tracking@1
-al costo di tempo maggiore.
+\newpage
+Dall'analisi dei risultati si osserva che la Regressione Lineare e
+l'MLP ottengono lo stesso valore di NMSE, pari a 0.668, mentre il
+kNN presenta un errore più alto (0.838). Questo comportamento
+suggerisce che la relazione tra posizione e fase è sostanzialmente
+lineare e può quindi essere modellata efficacemente anche da
+approcci semplici.
+Per quanto riguarda la metrica Tracking@1, tutti i modelli superano
+ampiamente la baseline casuale del 25\%, con l'MLP che raggiunge il
+valore più alto (47.07\%), seguito dalla regressione lineare
+(46.02\%) e dal kNN (45.51\%).
+Anche il Phase MAE mostra risultati coerenti: la regressione lineare
+e l'MLP presentano errori molto simili (circa 56 gradi), mentre il
+kNN risulta leggermente peggiore con 57.19 gradi. Queste prestazioni
+confermano la validità dei modelli lineari per il caso considerato
+($K=4$).
+In termini di tempo di addestramento, la Regressione Lineare è
+praticamente istantanea, il kNN richiede circa 40 millisecondi e
+l'MLP circa 310 millisecondi, valore giustificato dalla maggiore
+complessità architetturale della rete neurale.
 
 \section{Sensibilità alla quantizzazione}
-I risultati per $K\in\{2,4,8\}$ sono in Tabella~\ref{tab:results_by_k}.
+Per valutare l'impatto della quantizzazione di fase, mantenendo fisso
+$M=64$, si confrontano i risultati ottenuti per $K\in\{2,4,8\}$
+(Tabella~\ref{tab:results_by_k}).
 
 \begin{table}[ht]
   \centering
@@ -1432,45 +1468,49 @@ $1/K$.
 
 \begin{figure}[ht]
   \centering
-  \includegraphics[width=0.75\textwidth]{figures/tracking_vs_k.png}
+  \includegraphics[width=\textwidth]{figures/tracking_vs_k.png}
   \caption{Tracking@1 in funzione del numero di livelli di
     quantizzazione $K$. La linea tratteggiata rappresenta la baseline
-    casuale $1/K$. Tutti i modelli superano la baseline, con prestazioni
-  migliori per $K$ ridotto.}
+    casuale $1/K$. Le prestazioni migliori si osservano per $K$
+  ridotto, mentre per $K=8$ solo il kNN resta nettamente sopra la baseline.}
   \label{fig:tracking_vs_k}
 \end{figure}
 
-I risultati mostrano:
-\begin{itemize}
-  \item $K=2$: Linear e MLP raggiungono 75.30\% (baseline 50\%), kNN
-    68.16\%. Tracking@2 100\% per tutti (errore massimo un livello).
-  \item $K=4$: Tracking@1 circa 45\% (baseline 25\%), tutti i modelli
-    superano nettamente il caso casuale.
-  \item $K=8$: Linear e MLP 12\% (baseline 12.5\%), kNN 23.71\%
-    dimostra maggiore robustezza in questo regime grazie
-    all'approccio locale.
-\end{itemize}
+I risultati mostrano che, per $K=2$, i modelli Linear e MLP
+raggiungono un Tracking@1 pari al 75.30\% (a fronte di una baseline del
+50\%), mentre il kNN si attesta al 68.16\%; in questo caso il
+Tracking@2 è pari al 100\% per tutti i modelli, coerentemente con un
+errore massimo di un solo livello. Per $K=4$, il Tracking@1 è intorno
+al 45\% (baseline 25\%) e tutti i modelli superano nettamente il caso
+casuale. Per $K=8$, invece, Linear e MLP si collocano intorno al 12\%
+(baseline 12.5\%), quindi su valori sostanzialmente in linea con la
+baseline, mentre il kNN (23.71\%) evidenzia una maggiore robustezza in
+questo regime, verosimilmente legata al suo approccio locale.
 
 All'aumentare di $K$, NMSE e MAE migliorano (approssimazione più
-fedele), ma Tracking@1 diminuisce (difficoltà discriminazione livelli
-adiacenti).
+fedele), ma il Tracking@1 tende a diminuire per la maggiore difficoltà
+di discriminazione tra livelli di fase adiacenti.
 
 \section{Distribuzione errore e analisi spaziale}
-La CDF dell'errore di fase (Figura~\ref{fig:phase_error_cdf}) mostra
-distribuzioni quasi identiche per Linear/MLP (mediana ~45°, 90\%
-errori <90°), mentre kNN presenta coda più pesante, coerente con NMSE
-più alta.
+La CDF dell'errore di fase (Figura~\ref{fig:phase_error_cdf}) evidenzia
+distribuzioni pressoché sovrapponibili per Linear e MLP: la mediana è
+circa $45^\circ$ e il 90\% dei campioni presenta un errore inferiore a
+$90^\circ$. Il modello kNN, invece, mostra una coda più pesante,
+coerentemente con il valore di NMSE più elevato osservato in
+precedenza.
 
 \begin{figure}[ht]
   \centering
-  \includegraphics[width=0.7\textwidth]{figures/phase_error_cdf.png}
+  \includegraphics[width=.9\textwidth]{figures/phase_error_cdf.png}
   \caption{CDF dell'errore assoluto di fase per $K=4$.}
   \label{fig:phase_error_cdf}
 \end{figure}
 
 L'analisi per zone di distanza (Tabella~\ref{tab:results_by_zone})
-mostra degradazione contenuta (2-3 punti percentuali) tra near e far,
-confermando generalizzazione uniforme sull'area di test.
+mostra una degradazione contenuta del Tracking@1, pari a circa 2--3
+punti percentuali tra zona near e zona far. Tale andamento suggerisce
+una capacità di generalizzazione spaziale sostanzialmente uniforme
+sull'intera area di test.
 
 \begin{table}[ht]
   \centering
@@ -1488,16 +1528,23 @@ confermando generalizzazione uniforme sull'area di test.
 \end{table}
 
 \section{Discussione}
-I risultati confermano l'efficacia delle tecniche di Machine Learning
-per il controllo IRS. Linear e MLP ottengono NMSE identiche (0.668),
-suggerendo che la relazione posizione-fase è largamente lineare nello
-scenario considerato. Il kNN, pur meno competitivo in NMSE, mostra
-robustezza per $K=8$.
+In sintesi, i risultati riportati mostrano che i tre modelli
+considerati consentono un controllo efficace delle fasi IRS, con
+prestazioni complessivamente superiori alla baseline casuale nel caso
+di riferimento $K=4$. In particolare, Regressione Lineare e MLP
+raggiungono la stessa NMSE (0.668) e valori molto simili anche in
+termini di Phase MAE, indicando che, nello scenario analizzato, la
+mappatura tra posizione utente e configurazione di fase presenta una
+componente prevalentemente lineare.
 
-Il trade-off quantizzazione emerge chiaramente: $K$ ridotto migliora
-Tracking@1 ma limita la granularità di controllo; $K$ elevato migliora
-NMSE/MAE ma riduce accuratezza discreta. $K=4$ rappresenta un
-compromesso pratico (2 bit per elemento).
+L'analisi di sensibilità rispetto alla quantizzazione conferma il
+trade-off già evidenziato: con $K$ ridotto aumenta l'accuratezza
+discreta (Tracking@1), mentre con $K$ più elevato migliorano NMSE e
+MAE grazie a una rappresentazione di fase più fine. In questo quadro,
+$K=4$ risulta la scelta più equilibrata tra qualità predittiva e
+complessità implementativa (2 bit per elemento). Inoltre, la
+valutazione spaziale mostra una degradazione contenuta tra zone near
+e far, a supporto di una buona capacità di generalizzazione sull'area di test.
 
 \chapter{Conclusioni e sviluppi futuri}
 \label{chap:conclusioni}
