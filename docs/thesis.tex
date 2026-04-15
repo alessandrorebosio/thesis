@@ -1551,51 +1551,72 @@ e far, a supporto di una buona capacità di generalizzazione sull'area di test.
 \label{chap:conclusioni}
 
 \section{Risultati principali}
-Il lavoro ha analizzato il controllo IRS per scenari indoor NLoS,
-formulando il problema come mappatura posizione-utente → fasi IRS.
-
-I risultati sperimentali dimostrano che: (i) Linear e MLP ottengono
-NMSE identiche (0.668), (ii) tutti i modelli superano baseline
-casuale con Tracking@1 al 47\% (MLP) vs 25\% casuale per $K=4$, (iii)
-esiste trade-off quantizzazione: $K$ basso migliora Tracking@1 ($K=2$:
-75\%), $K$ alto migliora NMSE ($K=8$: 0.64), $K=4$ offre compromesso
-pratico, (iv) generalizzazione spaziale uniforme con degradazione 2-3\%
-tra zone near/far.
+Il lavoro analizza il controllo di una IRS in scenari indoor NLoS,
+formulando il problema come una mappatura diretta dalla posizione
+dell'utente alla configurazione di fase degli elementi riflettenti. I
+risultati sperimentali mostrano che gli algoritmi proposti superano
+le baseline casuali, ma mettono anche in evidenza un compromesso
+strutturale tra accuratezza predittiva e complessità implementativa,
+accentuato dalla quantizzazione delle fasi. La generalizzazione su
+aree spaziali non viste in fase di addestramento risulta comunque
+robusta e omogenea. Nel complesso, i risultati confermano che anche
+soluzioni modellistiche relativamente semplici possono fornire
+prestazioni affidabili in questo contesto, purché la scelta del livello
+di quantizzazione sia coerente con i vincoli hardware e con i requisiti
+operativi del sistema.
 
 \section{Contributi metodologici}
-Contributi principali: (i) formalizzazione come apprendimento
-supervisionato con metriche discrete specifiche (Tracking@1/2), (ii)
-protocollo generazione dataset sintetico efficiente, (iii) confronto
-sistematico di tre famiglie algoritmiche.
+I principali contributi metodologici del lavoro consistono nella
+formalizzazione del controllo IRS come problema di apprendimento
+supervisionato, con l'introduzione di metriche di valutazione
+discrete, quali Tracking@1 e Tracking@2, specificamente progettate
+per il dominio considerato. A ciò si aggiunge lo sviluppo di un
+protocollo efficiente per la generazione di dataset sintetici e il
+confronto sistematico di tre diverse famiglie algoritmiche, lineare,
+non parametrica e deep learning, valutate sulla medesima base dati.
 
 \section{Limiti del lavoro}
-Principali limitazioni: (i) scenario idealizzato (utente singolo,
-quasi-statico, canale semplificato), (ii) dipendenza da
-localizzazione accurata, (iii) assenza validation set dedicato, (iv)
-quantizzazione uniforme fissa, (v) non considera latenze e
-imperfezioni hardware.
+Il presente lavoro presenta alcune limitazioni metodologiche che è
+opportuno considerare. In particolare, lo scenario sperimentale
+adottato è fortemente idealizzato, poiché assume la presenza di un
+singolo utente, propagazione quasi statica e un modello di canale
+semplificato. Inoltre, i risultati dipendono in modo sensibile
+dall'accuratezza del sistema di localizzazione considerato; non è
+stato inoltre impiegato un validation set dedicato alla selezione
+degli iperparametri. Ulteriori limiti riguardano l'adozione di uno
+schema di quantizzazione uniforme e la mancata considerazione sia
+delle latenze di calcolo sia delle imperfezioni hardware degli elementi IRS.
 
 \section{Sviluppi futuri}
-Direzioni di estensione: (i) scenari multiutente con ottimizzazione
-multi-obiettivo, (ii) dinamica temporale con Reinforcement Learning
-(DQN, Actor-Critic), (iii) simulatori avanzati (ray-tracing, 3GPP),
-(iv) architetture neurali avanzate (CNN, LSTM, GNN), (v) apprendimento
-federato e online, (vi) validazione sperimentale su testbed reali.
-fornendo un quadro più completo delle potenzialità delle IRS nelle
-reti wireless di nuova generazione.
+Ulteriori direzioni di ricerca includono l'estensione dello studio a
+scenari multiutente, con una formulazione multi-obiettivo del
+problema, nonché l'introduzione della dinamica temporale mediante
+tecniche di \textit{Reinforcement Learning}. Un ulteriore sviluppo
+riguarda l'impiego di simulatori di propagazione più avanzati, come
+il \textit{ray tracing} e i modelli 3GPP, insieme all'adozione di
+architetture neurali più sofisticate, tra cui CNN (Convolutional
+Neural Network), LSTM (Long Short-Term Memory) e GNN (Graph Neural
+Network). Risultano inoltre promettenti paradigmi di apprendimento
+federato e online. Infine, una validazione sperimentale su testbed
+reali sarebbe cruciale per consolidare i risultati teorici e
+delineare in modo più completo il potenziale delle IRS nelle reti
+wireless di nuova generazione.
 
+\newpage
 \section{Considerazioni finali}
 Le IRS rappresentano una tecnologia promettente per scenari indoor
-con copertura limitata. L'integrazione con Machine Learning consente
-di affrontare efficientemente la complessità del problema di
-controllo, con soluzioni adattive e scalabili.
+caratterizzati da copertura limitata. La loro integrazione con
+tecniche di Machine Learning consente di affrontare in modo
+efficiente la complessità del problema di controllo, aprendo la
+strada a soluzioni adattive e scalabili.
 
-I risultati dimostrano che modelli semplici (regressione lineare)
-offrono prestazioni competitive con risorse computazionali limitate,
-mentre architetture più flessibili (MLP) offrono margini di
-miglioramento. Le IRS rappresentano un elemento complementare per
-ampliare il controllo sul canale radio nelle reti future (6G e
-beyond).
+I risultati ottenuti mostrano che modelli semplici, come la
+regressione lineare, possono offrire prestazioni competitive con un
+contenuto impiego di risorse computazionali, mentre architetture più
+flessibili, come le MLP, lasciano intravedere ulteriori margini di
+miglioramento. Nel complesso, le IRS si configurano come un elemento
+complementare per estendere il controllo del canale radio nelle reti
+wireless di nuova generazione, incluse le architetture 6G e oltre.
 
 \clearpage{\pagestyle{empty}\cleardoublepage}
 
