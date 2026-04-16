@@ -112,10 +112,14 @@ canale in presenza di superfici riflettenti passive, la progettazione
 congiunta dei beamforming attivi e passivi, l'acquisizione affidabile
 della CSI negli scenari multiutente e dinamici, e la gestione della
 complessità computazionale intrinseca in tali sistemi ibridi.
-La natura non convessa di molti problemi di ottimizzazione derivanti
-dalla struttura moltiplicativa dei canali assistiti da IRS, unita alla
-necessità di adattamento continuo a condizioni di propagazione
-variabili, rende inadeguati gli approcci puramente analitici tradizionali.
+Molti problemi di ottimizzazione nei sistemi assistiti da IRS sono
+non convessi, perché la funzione obiettivo dipende da prodotti tra
+variabili (ad esempio tra coefficienti di canale e fasi dell'IRS) e
+può quindi presentare molti massimi e minimi locali. In questi casi,
+gli approcci analitici classici spesso non garantiscono il
+raggiungimento della soluzione globale e diventano poco efficaci
+quando il sistema deve essere riconfigurato rapidamente al variare
+delle condizioni di propagazione.
 
 In questa prospettiva, le tecniche di Machine Learning rappresentano
 strumenti potenti e versatili per affrontare la complessità
