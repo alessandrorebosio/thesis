@@ -85,7 +85,7 @@ Nonostante i significativi benefici apportati, le reti 5G continuano
 a presentare criticità rilevanti legate alla complessità hardware, ai
 costi di implementazione e al consumo energetico. In particolare,
 l'estensione del Massive MIMO dalle bande sub-6 GHz alle frequenze
-millimetriche richiede architetture altamente complesse, maggior
+millimetriche richiede architetture altamente complesse, un maggior
 numero di catene a radiofrequenza (RF) e hardware sofisticato e
 costoso dal punto di vista energetico. Parallelamente, la
 propagazione in banda mmWave risulta fortemente penalizzata dalla
@@ -102,8 +102,8 @@ modo intelligente l'ambiente di propagazione mediante il controllo di
 elementi riflettenti passivi a basso costo. Questo approccio
 introduce un nuovo grado di libertà nella gestione del canale radio,
 permettendo di migliorare copertura, efficienza spettrale ed
-energetica e di mitigare fading e interferenza con costi di
-implementazione contenuti rispetto alle soluzioni tradizionali.
+energetica e di mitigare fenomini di fading e di interferenza con
+costi di implementazione contenuti rispetto alle soluzioni tradizionali.
 
 L'integrazione delle IRS in sistemi Massive MIMO e in scenari 5G e
 oltre-5G comporta tuttavia sfide tecniche significative e ancora
@@ -155,18 +155,10 @@ elevate e creare "zone d'ombra" attorno a sorgenti di segnale.
 
 Un altro fenomeno critico è il multipath: il segnale trasmesso arriva
 al ricevitore attraverso molteplici percorsi dovuti a riflessioni,
-diffrazioni e scattering. Questa ricombinazione di contributi può
-generare fading su piccola scala, variazioni rapide dell'ampiezza e
-della fase del segnale, e allungamento temporale dell'impulso (delay
-spread) che peggiora la qualità del collegamento e aumenta la
-probabilità di errori nella ricezione.
+diffrazioni e scattering. Questa ricombinazione di contributi può generare fenomeni di fading su piccola scala, variazioni rapide dell'ampiezza e della fase del segnale, e allungamento temporale dell'impulso (delay spread) che peggiora la qualità del collegamento e aumenta la probabilità di errori nella ricezione.
 
 La dipendenza dalla frequenza è particolarmente rilevante nelle bande
-mmWave: sebbene forniscano ampia larghezza di banda e alte capacità,
-presentano elevata attenuazione in presenza di ostacoli e sono
-fortemente sensibili al blocco da parte di elementi mobili (persone,
-porte) e fissi (mobili metallici). Questo rende la copertura mmWave
-in ambienti indoor molto non uniforme e suscettibile a interruzioni frequenti.
+mmWave: sebbene tali frequenze forniscano ampia larghezza di banda e alte capacità, presentano elevata attenuazione in presenza di ostacoli e sono fortemente sensibili al blocco da parte di elementi mobili (persone, porte) e fissi (mobili metallici). Questo rende la copertura mmWave in ambienti indoor del tutto multiforme e suscettibile a interruzioni frequenti.
 
 La mobilità degli utenti e la presenza di ostacoli dinamici
 introducono ulteriori difficoltà: link temporaneamente Non in Linea
@@ -494,8 +486,7 @@ verso l'interno della stanza, in modo da massimizzare la riflessione
 dei percorsi utili verso l'utente.
 La scelta di $M=64$ rappresenta un compromesso tra guadagno di
 beamforming passivo e complessità: un numero di elementi inferiore
-riduce il margine di miglioramento della copertura, mentre valori più
-elevati aumentano dimensionalità del problema e costo computazionale.
+riduce il margine di miglioramento della copertura, mentre valori più elevati aumentano la dimensionalità del problema ed il costo computazionale.
 
 L'utente mobile (UE) si muove su un piano orizzontale a quota $z =
 1\,\mathrm{m}$, con posizione $\mathbf{p} = (x, y, 1)$ distribuita
